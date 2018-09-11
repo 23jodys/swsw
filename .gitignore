@@ -1,0 +1,6 @@
+html/
+latex/
+.*.swp
+*.o
+sw
+test_score_matrix

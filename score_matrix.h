@@ -26,7 +26,7 @@ typedef struct ScoreMatrixResult {
  * @param [in] S2 dimension of the sequence 2 side. This includes an extra column that will be the zeroed column so that tracebacks work easily.
  * @returns a new ScoreMatrix with the given dimensions
  */
-ScoreMatrix score_matrix_create(int S1, int S2);
+ScoreMatrix * score_matrix_create(int S1, int S2);
 
 
 /**
@@ -69,10 +69,24 @@ ScoreMatrixError score_matrix_adds(ScoreMatrix *, int, int, Score);
 ScoreMatrixResult score_matrix_get(ScoreMatrix *, int, int);
 
 /**
+ * @brief Print a scoring matrix to stdout for debugging
+ */
+void score_matrix_printf(ScoreMatrix * score_matrix, char * seq1, int seq1_len, char * seq2, int seq2_len); 
+
+/**
+ * @brief Create a score matrix and perform alignment
+ */
+void score_matrix_align(char * seq1, int seq1_len, char * seq2, int seq2_len); 
+
+/**
+ * @brief Perform the actual scoring operation
+ */
+ScoreMatrixError score_matrix_score(ScoreMatrix * score_matrix, char * seq1, int seq1_len, char * seq2, int seq2_len); 
+
+/**
  * @brief Free the score matrix
  * @param [in,out] score_matrix
- * @detail It is the responsibility to deal with the storage associated with the
- * ScoreMatrix struct itself, e.g relying on automatic storage or free on the
- * ScoreMatrix struct itself _after_ this has been called.
+ * @detail This frees both the #ScoreMatrix struct and its dynamically sized 
+ * score matrix.
  */
-void score_matrix_free(ScoreMatrix *);
+void score_matrix_free(ScoreMatrix **);

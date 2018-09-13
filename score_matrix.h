@@ -1,11 +1,15 @@
 #include <stdbool.h>
 
+/** @file */
+
 typedef int Score;
 
 typedef struct ScoreMatrix {
 	Score * data;
 	int S1;
 	int S2;
+	int highest_s1;
+	int highest_s2;
 	bool success;
 } ScoreMatrix;
 
@@ -19,6 +23,26 @@ typedef struct ScoreMatrixResult {
 	bool success;
 	Score value;
 } ScoreMatrixResult;
+
+typedef struct ScoreConfig {
+	int gap;
+	int match;
+	int mismatch;
+} ScoreConfig;
+
+//TODO: this needs to properly exit.
+/**
+ * @def score_matrix_geta(score_matrix, s1, s2, out) 
+ * Appends the value at s1 x s2 and appends it to out
+ * @param [in] score_matrix score matrix to retrieve from
+ * @param [in] s1, sequence 1 coordinate 
+ * @param [in] s2, sequence 2 coordinate 
+ * @param [out] out, append to this value
+ */
+#define score_matrix_geta(score_matrix, s1, s2, out) do { \
+	ScoreMatrixResult __xyzresult = score_matrix_get(score_matrix, s1, s2); \
+	if (__xyzresult.success == true) {out += __xyzresult.value;} \
+	} while(0);
 
 /**
  * @brief create a new ScoreMatrix
@@ -81,7 +105,13 @@ void score_matrix_align(char * seq1, int seq1_len, char * seq2, int seq2_len);
 /**
  * @brief Perform the actual scoring operation
  */
-ScoreMatrixError score_matrix_score(ScoreMatrix * score_matrix, char * seq1, int seq1_len, char * seq2, int seq2_len); 
+ScoreMatrixError score_matrix_score(ScoreMatrix * score_matrix, ScoreConfig score_config, char * seq1, int seq1_len, char * seq2, int seq2_len); 
+
+/**
+ * @brief perform traceback
+ * @param [in] score_matrix
+ */
+void score_matrix_traceback(ScoreMatrix * score_matrix, char * seq1, int seq1_len, char * seq2, int seq2_len);
 
 /**
  * @brief Free the score matrix

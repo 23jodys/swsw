@@ -2,11 +2,6 @@
 #include <stdio.h>
 #include "score_matrix.h"
 
-typedef struct ScoreConfig {
-	int gap;
-	int match;
-	int mismatch;
-} ScoreConfig;
 
 void score_matrix_align(char * seq1, int seq1_len, char * seq2, int seq2_len) {
 	ScoreMatrix * score_matrix = score_matrix_create(seq1_len + 1, seq2_len + 1);
@@ -18,37 +13,36 @@ void score_matrix_align(char * seq1, int seq1_len, char * seq2, int seq2_len) {
 	score_matrix_free(&score_matrix);
 }
 
-ScoreMatrixError score_matrix_score(ScoreMatrix * score_matrix, char * seq1, int seq1_len, char * seq2, int seq2_len) {
+ScoreMatrixError score_matrix_score(
+		ScoreMatrix * score_matrix,
+		ScoreConfig score_config,
+		char * seq1, int seq1_len,
+		char * seq2, int seq2_len) {
 
-	ScoreConfig score;
-	score.gap = 1;
-	score.match=2; 
-	score.mismatch=-1;
-
-	int highest_s1 = 0;
-	int highest_s2 = 0;
 	int max = 0;
 	int seq1_index = 0; // Index into actual sequence, not into the scoring matrix
 	for (int s1_index=1; s1_index < score_matrix->S1; s1_index++) {
 		int seq2_index = 0; // Index into actual sequence, not into the scoring matrix
 		for (int s2_index=1; s2_index < score_matrix->S2; s2_index++) {
 			printf("Comparing %c with %c at %d,%d\n", seq1[seq1_index], seq2[seq2_index], seq1_index, seq2_index);
-			int nw_score, w_score, n_score;
-			// nw_score
+
+			int nw_score = 0;
 			if (seq1[seq1_index] == seq2[seq2_index]) {
-				ScoreMatrixResult result = score_matrix_get(score_matrix, s1_index - 1, s2_index - 1);
-				nw_score = result.value + score.match;
+				score_matrix_geta(score_matrix, s1_index - 1, s2_index - 1, nw_score);
+				nw_score += score_config.match;
 			} else {
-				ScoreMatrixResult result = score_matrix_get(score_matrix, s1_index - 1, s2_index - 1);
-				nw_score = result.value + score.mismatch;
+				score_matrix_geta(score_matrix, s1_index - 1, s2_index - 1, nw_score);
+				nw_score += score_config.mismatch;
 			}
 
-			// w_score
-			ScoreMatrixResult result = score_matrix_get(score_matrix, s1_index - 1, s2_index - 1);
-			w_score = scoring_matrix[s1_index][s2_index - 1] - score.gap;
+			int w_score = 0;
+			score_matrix_geta(score_matrix, s1_index, s2_index - 1, w_score);
+			w_score += score_config.gap;
 
-			// n_score
-			n_score = scoring_matrix[s1_index - 1][s2_index] - score.gap;
+			int n_score = 0;
+			score_matrix_geta(score_matrix, s1_index - 1, s2_index, n_score);
+			n_score += score_config.gap;
+
 			printf("nw_score: %d, w_score: %d, n_score %d\n", nw_score, w_score, n_score);
 			
 			int score;
@@ -61,10 +55,54 @@ ScoreMatrixError score_matrix_score(ScoreMatrix * score_matrix, char * seq1, int
 			} else {
 				score = 0;
 			}
+
+			if (score > max) {
+				score_matrix->highest_s1 = s1_index;
+				score_matrix->highest_s2 = s2_index;
+			}
+
+			seq2_index++;
+
+			score_matrix_add(score_matrix, s1_index, s2_index, score);
+		}
+		seq1_index++;
 	}
 
 	ScoreMatrixError error = {.success=true, .error_number=0};
 	return error;
+}
+
+
+void score_matrix_traceback(ScoreMatrix * score_matrix, char * seq1, int seq1_len, char * seq2, int seq2_len) {
+	int current_score = 0;
+	int s1_index = score_matrix->highest_s1;
+	int s2_index = score_matrix->highest_s2;
+	do {
+		printf("Looking at %d, %d\n", s1_index, s2_index);
+		Score nw_score = 0;
+		score_matrix_geta(score_matrix, s1_index - 1, s2_index - 1, nw_score);
+
+		Score w_score = 0;
+		score_matrix_geta(score_matrix, s1_index - 1, s2_index, w_score);
+
+		Score n_score = 0;
+		score_matrix_geta(score_matrix, s1_index, s2_index - 2, n_score);
+
+		if (nw_score >= w_score && nw_score >= n_score) {
+			printf(" nw_score (%d) was highest adding '%c':'%c', moving to %d, %d\n", nw_score, seq1[s1_index - 1], seq2[s2_index - 1], s1_index -1, s2_index -1);
+			current_score = nw_score;
+			s1_index--;
+			s2_index--;
+		} else if (w_score >= nw_score && w_score >= n_score) {
+			printf(" w_score (%d) was highest adding '%c':'%c', moving to %d, %d\n", w_score, ' ', seq2[s2_index], s1_index, s2_index -1);
+			current_score = w_score;
+			s2_index--;
+		} else {
+			printf(" n_score (%d) was highest adding '%c':'%c', moving to %d, %d\n", n_score, seq1[s1_index], ' ', s1_index -1 , s2_index);
+			current_score = n_score;
+			s1_index--;
+		}
+	} while (current_score > 0); 
 }
 
 

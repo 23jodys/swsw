@@ -159,17 +159,52 @@ static void test_align(void **state) {
 	score_matrix_align(seq1, 9, seq2, 9);
 }
 
+
+static void test_traceback(void **state) {
+	ScoreMatrix * s = score_matrix_create(10,10);
+
+	char * seq1 = "ABCDEFGHIJ";
+	char * seq2 = "ABCDEEEHIJ";
+
+	ScoreConfig score_config;
+	score_config.gap      = -2;
+	score_config.match    =  3; 
+	score_config.mismatch = -3;
+
+	ScoreMatrixError error = score_matrix_score(s, score_config, seq1, 9, seq2, 9);
+	score_matrix_printf(s, seq1, 9, seq2, 9);
+	score_matrix_traceback(s, seq1, 9, seq2, 9);
+	score_matrix_free(&s);
+	
+}
+
 static void test_score(void **state) {
 	ScoreMatrix * s = score_matrix_create(10,10);
 	char * seq1 = "ABCDDDDHIJ";
 	char * seq2 = "ABCDEFGHIJ";
-	ScoreMatrixError error = score_matrix_score(s, seq1, 9, seq2, 9);
-	assert_true(error.success);
 
+	ScoreConfig score_config;
+	score_config.gap = 2;
+	score_config.match=3; 
+	score_config.mismatch=-3;
+
+	ScoreMatrixError error = score_matrix_score(s, score_config, seq1, 9, seq2, 9);
+	assert_true(error.success);
+	// Confirm that the highest was found at index 9 in both dimensions
+	assert_int_equal(s->highest_s1, 9);
+	assert_int_equal(s->highest_s2, 9);
+
+	// Confirm one of the scores
+	Score result = 0;
+	score_matrix_geta(s, 5, 5, result);
+	assert_int_equal(result, 7);
+	score_matrix_printf(s, seq1, 9, seq2, 9);
+	score_matrix_free(&s);
 }
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
+		cmocka_unit_test(test_traceback),
 		cmocka_unit_test(test_score),
 		cmocka_unit_test(test_align),
 		cmocka_unit_test(test_printf),

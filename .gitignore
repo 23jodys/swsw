@@ -4,3 +4,4 @@ latex/
 *.o
 sw
 test_score_matrix
+test_alignment

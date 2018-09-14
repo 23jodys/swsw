@@ -161,19 +161,19 @@ static void test_align(void **state) {
 
 
 static void test_traceback(void **state) {
-	ScoreMatrix * s = score_matrix_create(10,10);
+	ScoreMatrix * s = score_matrix_create(10,7);
 
 	char * seq1 = "ABCDEFGHIJ";
-	char * seq2 = "ABCDEEEHIJ";
+	char * seq2 = "ABCDHIJ";
 
 	ScoreConfig score_config;
-	score_config.gap      = -2;
+	score_config.gap      = -1;
 	score_config.match    =  3; 
 	score_config.mismatch = -3;
 
-	ScoreMatrixError error = score_matrix_score(s, score_config, seq1, 9, seq2, 9);
-	score_matrix_printf(s, seq1, 9, seq2, 9);
-	score_matrix_traceback(s, seq1, 9, seq2, 9);
+	ScoreMatrixError error = score_matrix_score(s, score_config, seq1, 9, seq2, 6);
+	score_matrix_printf(s, seq1, 9, seq2, 6);
+	score_matrix_traceback(s, seq1, 9, seq2, 6);
 	score_matrix_free(&s);
 	
 }

@@ -83,10 +83,10 @@ void score_matrix_traceback(ScoreMatrix * score_matrix, char * seq1, int seq1_le
 		score_matrix_geta(score_matrix, s1_index - 1, s2_index - 1, nw_score);
 
 		Score w_score = 0;
-		score_matrix_geta(score_matrix, s1_index - 1, s2_index, w_score);
+		score_matrix_geta(score_matrix, s1_index, s2_index - 1, w_score);
 
 		Score n_score = 0;
-		score_matrix_geta(score_matrix, s1_index, s2_index - 2, n_score);
+		score_matrix_geta(score_matrix, s1_index - 1, s2_index, n_score);
 
 		if (nw_score >= w_score && nw_score >= n_score) {
 			printf(" nw_score (%d) was highest adding '%c':'%c', moving to %d, %d\n", nw_score, seq1[s1_index - 1], seq2[s2_index - 1], s1_index -1, s2_index -1);
@@ -196,5 +196,6 @@ void score_matrix_printf(ScoreMatrix * score_matrix, char * seq1, int seq1_len, 
 void score_matrix_free(ScoreMatrix ** score_matrix) {
 	free((*(*score_matrix)).data);
 	(*(*score_matrix)).data = NULL;
+	*score_matrix = NULL;
 	free(*score_matrix);
 }

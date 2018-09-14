@@ -3,6 +3,7 @@
 #include <setjmp.h>
 #include <stdio.h>
 
+#define UNIT_TESTING 1
 #include <cmocka.h>
 
 #include "score_matrix.h"

@@ -1,8 +1,8 @@
 #include <stdbool.h>
 
 typedef struct PairAlignment {
-	char * s1;
-	char * s2;
+	char* s1;
+	char* s2;
 	int success;
 	int length;
 	int _index;

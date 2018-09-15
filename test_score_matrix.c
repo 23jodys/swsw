@@ -13,7 +13,8 @@ static void test_add_freed_matrix_fails(void **state) {
 	(void) state; /* unused */
 	ScoreMatrix * s = score_matrix_create(10, 10);
 	score_matrix_free(&s);
-	ScoreMatrixError result = score_matrix_add(s, 0,0,10);
+	assert_null(s);
+	ScoreMatrixError result = score_matrix_add(s, 0, 0, 10);
 	assert_false(result.success);
 }
 
@@ -123,6 +124,9 @@ static void test_create_add_free(void **state) {
 	/* Free the matrix */
 	score_matrix_free(&s);
 
+	/* Verify that the pointer was set to NULL */
+	assert_null(s);
+
 	/* Verify that we get a false success */
 	ScoreMatrixResult get2_result = score_matrix_get(s, 5, 5);
 	assert_false(get2_result.success);
@@ -196,10 +200,10 @@ static void test_score(void **state) {
 	assert_int_equal(s->highest_s2, 9);
 
 	// Confirm one of the scores
+	score_matrix_printf(s, seq1, 9, seq2, 9);
 	Score result = 0;
 	score_matrix_geta(s, 5, 5, result);
-	assert_int_equal(result, 7);
-	score_matrix_printf(s, seq1, 9, seq2, 9);
+	assert_int_equal(result, 19);
 	score_matrix_free(&s);
 }
 

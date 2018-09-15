@@ -24,7 +24,7 @@ ScoreMatrixError score_matrix_score(
 	for (int s1_index=1; s1_index < score_matrix->S1; s1_index++) {
 		int seq2_index = 0; // Index into actual sequence, not into the scoring matrix
 		for (int s2_index=1; s2_index < score_matrix->S2; s2_index++) {
-			printf("Comparing %c with %c at %d,%d\n", seq1[seq1_index], seq2[seq2_index], seq1_index, seq2_index);
+			//printf("Comparing %c with %c at %d,%d\n", seq1[seq1_index], seq2[seq2_index], seq1_index, seq2_index);
 
 			int nw_score = 0;
 			if (seq1[seq1_index] == seq2[seq2_index]) {
@@ -43,7 +43,7 @@ ScoreMatrixError score_matrix_score(
 			score_matrix_geta(score_matrix, s1_index - 1, s2_index, n_score);
 			n_score += score_config.gap;
 
-			printf("nw_score: %d, w_score: %d, n_score %d\n", nw_score, w_score, n_score);
+			//printf("nw_score: %d, w_score: %d, n_score %d\n", nw_score, w_score, n_score);
 			
 			int score;
 			if (nw_score >= w_score && nw_score >= n_score && nw_score >0 ) {
@@ -127,6 +127,10 @@ ScoreMatrix * score_matrix_create(int S1, int S2) {
 
 
 ScoreMatrixError score_matrix_add(ScoreMatrix * score_matrix, int s1, int s2, Score value) {
+	if (score_matrix == NULL) {
+		ScoreMatrixError error = {.error_number=3, .success=false};
+		return error;
+	}
 	if (score_matrix->data == NULL) {
 		ScoreMatrixError error = {.error_number=3, .success=false};
 		return error;
@@ -153,6 +157,10 @@ ScoreMatrixError score_matrix_adds(ScoreMatrix * score_matrix, int i1, int i2, S
 }
 
 ScoreMatrixResult score_matrix_get(ScoreMatrix * score_matrix, int s1, int s2) {
+	if (score_matrix == NULL) {
+		ScoreMatrixResult error = {.error_number=3, .success=false, .value=0};
+		return error;
+	}
 	if (score_matrix->data == NULL) {
 		ScoreMatrixResult error = {.error_number=3, .success=false, .value=0};
 		return error;
@@ -196,6 +204,6 @@ void score_matrix_printf(ScoreMatrix * score_matrix, char * seq1, int seq1_len, 
 void score_matrix_free(ScoreMatrix ** score_matrix) {
 	free((*(*score_matrix)).data);
 	(*(*score_matrix)).data = NULL;
-	*score_matrix = NULL;
 	free(*score_matrix);
+	*score_matrix = NULL;
 }

@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "score_matrix.h"
+#include "swsw.h"
 
 
 void score_matrix_align(char * seq1, int seq1_len, char * seq2, int seq2_len) {
@@ -73,10 +73,15 @@ ScoreMatrixError score_matrix_score(
 }
 
 
-void score_matrix_traceback(ScoreMatrix * score_matrix, char * seq1, int seq1_len, char * seq2, int seq2_len) {
+PairAlignment * score_matrix_traceback(ScoreMatrix * score_matrix, char * seq1, int seq1_len, char * seq2, int seq2_len) {
 	int current_score = 0;
 	int s1_index = score_matrix->highest_s1;
 	int s2_index = score_matrix->highest_s2;
+	PairAlignment* pa = pair_alignment_create(seq1_len + seq2_len);
+	if (NULL == pa) {
+		return NULL;
+	}
+	printf("here");
 	do {
 		printf("Looking at %d, %d\n", s1_index, s2_index);
 		Score nw_score = 0;
@@ -91,18 +96,22 @@ void score_matrix_traceback(ScoreMatrix * score_matrix, char * seq1, int seq1_le
 		if (nw_score >= w_score && nw_score >= n_score) {
 			printf(" nw_score (%d) was highest adding '%c':'%c', moving to %d, %d\n", nw_score, seq1[s1_index - 1], seq2[s2_index - 1], s1_index -1, s2_index -1);
 			current_score = nw_score;
+			pair_alignment_prepend(pa, seq1[s1_index - 1], seq2[s2_index - 1]);
 			s1_index--;
 			s2_index--;
 		} else if (w_score >= nw_score && w_score >= n_score) {
 			printf(" w_score (%d) was highest adding '%c':'%c', moving to %d, %d\n", w_score, ' ', seq2[s2_index], s1_index, s2_index -1);
+			pair_alignment_prepend(pa, ' ', seq2[s2_index - 1]);
 			current_score = w_score;
 			s2_index--;
 		} else {
 			printf(" n_score (%d) was highest adding '%c':'%c', moving to %d, %d\n", n_score, seq1[s1_index], ' ', s1_index -1 , s2_index);
+			pair_alignment_prepend(pa, seq1[s1_index], ' ');
 			current_score = n_score;
 			s1_index--;
 		}
 	} while (current_score > 0); 
+	return pa;
 }
 
 

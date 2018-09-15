@@ -6,7 +6,7 @@
 #define UNIT_TESTING 1
 #include <cmocka.h>
 
-#include "score_matrix.h"
+#include "swsw.h"
 
 
 static void test_add_freed_matrix_fails(void **state) {
@@ -178,8 +178,11 @@ static void test_traceback(void **state) {
 
 	ScoreMatrixError error = score_matrix_score(s, score_config, seq1, 9, seq2, 6);
 	score_matrix_printf(s, seq1, 9, seq2, 6);
-	score_matrix_traceback(s, seq1, 9, seq2, 6);
+	PairAlignment* pa = score_matrix_traceback(s, seq1, 9, seq2, 6);
+	assert_non_null(pa);
 	score_matrix_free(&s);
+	pair_alignment_free(&pa);
+	assert_null(pa);
 	
 }
 
@@ -209,7 +212,6 @@ static void test_score(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		cmocka_unit_test(test_traceback),
 		cmocka_unit_test(test_score),
 		cmocka_unit_test(test_align),
 		cmocka_unit_test(test_printf),
@@ -226,6 +228,7 @@ int main(void) {
 		cmocka_unit_test(test_add_negative_s2), 
 		cmocka_unit_test(test_get_negative_s1), 
 		cmocka_unit_test(test_get_negative_s2), 
+		cmocka_unit_test(test_traceback),
 	};
 	int result = cmocka_run_group_tests(tests, NULL, NULL);
 }

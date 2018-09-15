@@ -111,7 +111,7 @@ ScoreMatrixError score_matrix_score(ScoreMatrix * score_matrix, ScoreConfig scor
  * @brief perform traceback
  * @param [in] score_matrix
  */
-void score_matrix_traceback(ScoreMatrix * score_matrix, char * seq1, int seq1_len, char * seq2, int seq2_len);
+PairAlignment* score_matrix_traceback(ScoreMatrix * score_matrix, char * seq1, int seq1_len, char * seq2, int seq2_len);
 
 /**
  * @brief Free the score matrix

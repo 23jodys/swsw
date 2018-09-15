@@ -1,9 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "alignment.h"
+#include "swsw.h"
 
-PairAlignment * pair_alignment_create(int length) {
+PairAlignment* pair_alignment_create(int length) {
+	printf("here");
 	PairAlignment* _alignment = malloc(sizeof(PairAlignment));
 
 	_alignment->s1 = malloc(sizeof(char) * length);
@@ -16,11 +17,17 @@ PairAlignment * pair_alignment_create(int length) {
 	return _alignment;
 }
 
-void pair_alignment_prepend(PairAlignment * pa, char c1, char c2) {
+PairAlignmentError pair_alignment_prepend(PairAlignment * pa, char c1, char c2) {
+	if (pa->_index < 0) {
+		PairAlignmentError error = {.success=false, .error_number=1};
+		return error;
+	} 
 	printf("c1: %c, c2: %c\n", c1, c2);
 	pa->s1[pa->_index] = c1;	
 	pa->s2[pa->_index] = c2;	
 	pa->_index -= 1;
+	PairAlignmentError error = {.success=true, .error_number=0};
+	return error;
 }
 
 void pair_alignment_sprint(PairAlignment * pa) {

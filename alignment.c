@@ -3,10 +3,22 @@
 
 #include "swsw.h"
 
-PairAlignment* pair_alignment_create(int length) {
+void fake_malloc(void) {
+	int * const temporary = (int*)malloc(sizeof(int));
+	*temporary = 0;
+	free(temporary);
+	*temporary = 2;
 	printf("here");
-	PairAlignment* _alignment = malloc(sizeof(PairAlignment));
 
+}
+
+PairAlignment* pair_alignment_create(int length) {
+	PairAlignment* _alignment;
+	//_alignment = malloc(1);
+       _alignment = malloc(sizeof(PairAlignment));
+	if(_alignment == NULL) {
+		return NULL;
+	}
 	_alignment->s1 = malloc(sizeof(char) * length);
 	_alignment->s2 = malloc(sizeof(char) * length);
 	if (!_alignment || !_alignment->s1 || !_alignment->s2) {
@@ -40,8 +52,8 @@ void pair_alignment_sprint(PairAlignment * pa) {
 void pair_alignment_free(PairAlignment ** pa) {
 	free((*(*pa)).s1);
 	free((*(*pa)).s2);
-	(*(*pa)).s1 = NULL;
-	(*(*pa)).s2 = NULL;
+	//(*(*pa)).s1 = NULL;
+	//(*(*pa)).s2 = NULL;
 	free(*pa);
 
 	*pa = NULL;

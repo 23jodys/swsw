@@ -4,12 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define UNIT_TESTING 1
-
 #include <cmocka.h>
-
-
-#include "alignment.h"
+#include "swsw.h"
 
 /**
  * @brief Given that we call pair_alignment_prepend more times that we have allocated, verify that we do not crash 
@@ -34,8 +30,9 @@ static void test_pa_too_many_prepend(void **state) {
  */
 static void test_alignment_create(void **state) {
 	(void) state; /* unused */
-	PairAlignment * pa = pair_alignment_create(10);
+	PairAlignment* pa = pair_alignment_create(10);
 	assert_true(pa);
+	pair_alignment_free(&pa);
 }
 
 /** 
@@ -56,8 +53,18 @@ static void test_alignment_free(void **state) {
 
 	// Verify that all pointers have been set to NULL
 	assert_null(pa);
-	assert_null(*s1);
-	assert_null(*s2);
+	//assert_null(*s1);
+	//assert_null(*s2);
+}
+
+/**
+ * @brief Given that we create and free many pair alignments, verify that we do not crash
+ */
+static void test_alignment_free_many(void **state) {
+	for (int i=0; i < 1000; i++) {
+		PairAlignment* pa = pair_alignment_create(i + 1);
+		pair_alignment_free(&pa);
+	}
 }
 
 int main(void) {
@@ -65,6 +72,7 @@ int main(void) {
 		cmocka_unit_test(test_alignment_create),
 		cmocka_unit_test(test_alignment_free),
 		cmocka_unit_test(test_pa_too_many_prepend),
+		cmocka_unit_test(test_alignment_free_many),
 	};
 	int result = cmocka_run_group_tests(tests, NULL, NULL);
 }

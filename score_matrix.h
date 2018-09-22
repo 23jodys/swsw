@@ -1,6 +1,7 @@
-#include <stdbool.h>
-
+#ifndef SCORE_MATRIX_H
+#define SCORE_MATRIX_H
 /** @file */
+#include <stdbool.h>
 
 typedef int Score;
 
@@ -50,7 +51,7 @@ typedef struct ScoreConfig {
  * @param [in] S2 dimension of the sequence 2 side. This includes an extra column that will be the zeroed column so that tracebacks work easily.
  * @returns a new ScoreMatrix with the given dimensions
  */
-ScoreMatrix * score_matrix_create(int S1, int S2);
+ScoreMatrix * score_matrix_create(size_t S1, size_t S2);
 
 
 /**
@@ -64,7 +65,7 @@ ScoreMatrix * score_matrix_create(int S1, int S2);
  * @param [in] s1, the location on the sequence 1 dimension
  * @param [in] s2, the location on the sequence 2 dimension
  */
-ScoreMatrixError score_matrix_add(ScoreMatrix *, int, int, Score);
+ScoreMatrixError score_matrix_add(ScoreMatrix *, size_t, size_t, Score);
 
 /**
  * @brief add a single value to the matrix
@@ -90,7 +91,7 @@ ScoreMatrixError score_matrix_adds(ScoreMatrix *, int, int, Score);
  *
  * @return The #ScoreMatrixResult structure containing the requested #Score
  */
-ScoreMatrixResult score_matrix_get(ScoreMatrix *, int, int);
+ScoreMatrixResult score_matrix_get(ScoreMatrix *, size_t, size_t);
 
 /**
  * @brief Print a scoring matrix to stdout for debugging
@@ -120,3 +121,4 @@ PairAlignment* score_matrix_traceback(ScoreMatrix * score_matrix, char * seq1, i
  * score matrix.
  */
 void score_matrix_free(ScoreMatrix **);
+#endif /*SCORE_MATRIX_H*/

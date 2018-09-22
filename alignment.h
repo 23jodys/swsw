@@ -1,3 +1,5 @@
+#ifndef ALIGNMENT_H
+#define ALIGNMENT_H
 #include <stdbool.h>
 
 typedef struct PairAlignment {
@@ -13,10 +15,12 @@ typedef struct PairAlignmentError {
 	int error_number;
 } PairAlignmentError;
 
-PairAlignment * pair_alignment_create(int length);
+PairAlignment* pair_alignment_create(int length);
 
 PairAlignmentError  pair_alignment_prepend(PairAlignment* pa, char c1, char c2);
 
 void pair_alignment_sprint(PairAlignment* pa);
 
 void pair_alignment_free(PairAlignment** pa);
+void fake_malloc(void);
+#endif /* ALIGNMENT_H */

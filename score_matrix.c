@@ -73,7 +73,7 @@ ScoreMatrixError score_matrix_score(
 }
 
 
-PairAlignment * score_matrix_traceback(ScoreMatrix * score_matrix, char * seq1, int seq1_len, char * seq2, int seq2_len) {
+PairAlignment* score_matrix_traceback(ScoreMatrix * score_matrix, char * seq1, int seq1_len, char * seq2, int seq2_len) {
 	int current_score = 0;
 	int s1_index = score_matrix->highest_s1;
 	int s2_index = score_matrix->highest_s2;
@@ -81,7 +81,6 @@ PairAlignment * score_matrix_traceback(ScoreMatrix * score_matrix, char * seq1, 
 	if (NULL == pa) {
 		return NULL;
 	}
-	printf("here");
 	do {
 		printf("Looking at %d, %d\n", s1_index, s2_index);
 		Score nw_score = 0;
@@ -115,8 +114,8 @@ PairAlignment * score_matrix_traceback(ScoreMatrix * score_matrix, char * seq1, 
 }
 
 
-ScoreMatrix * score_matrix_create(int S1, int S2) {
-	ScoreMatrix * score_matrix;
+ScoreMatrix* score_matrix_create(size_t S1, size_t S2) {
+	ScoreMatrix* score_matrix;
 
 	score_matrix = malloc(sizeof(ScoreMatrix));
 
@@ -135,7 +134,7 @@ ScoreMatrix * score_matrix_create(int S1, int S2) {
 }
 
 
-ScoreMatrixError score_matrix_add(ScoreMatrix * score_matrix, int s1, int s2, Score value) {
+ScoreMatrixError score_matrix_add(ScoreMatrix * score_matrix, size_t s1, size_t s2, Score value) {
 	if (score_matrix == NULL) {
 		ScoreMatrixError error = {.error_number=3, .success=false};
 		return error;
@@ -144,17 +143,18 @@ ScoreMatrixError score_matrix_add(ScoreMatrix * score_matrix, int s1, int s2, Sc
 		ScoreMatrixError error = {.error_number=3, .success=false};
 		return error;
 	}
-	if (s1 >= score_matrix->S1 || s1 < 0) {
+	if (s1 > score_matrix->S1) {
 		ScoreMatrixError error = {.error_number=1, .success=false};
 		return error;
 	}
 
-	if (s2 >= score_matrix->S2 || s2 < 0) {
+	if (s2 > score_matrix->S2) {
 		ScoreMatrixError error = {.error_number=2, .success=false};
 		return error;
 	}
+	size_t offset = (s1 * score_matrix->S1) + s2; 
 
-	*(score_matrix->data + s1 * score_matrix->S1 + s2) = value;
+	*(score_matrix->data + offset) = value;
 
 	ScoreMatrixError error = {.error_number=0, .success=true};
 	return error;
@@ -165,7 +165,30 @@ ScoreMatrixError score_matrix_adds(ScoreMatrix * score_matrix, int i1, int i2, S
 	return result;
 }
 
-ScoreMatrixResult score_matrix_get(ScoreMatrix * score_matrix, int s1, int s2) {
+ScoreMatrixResult score_matrix_get(ScoreMatrix * score_matrix, size_t s1, size_t s2) {
+	/*
+	 *
+	 *               Seq 2/ s2         
+	 *      +--+--+--+--+--+--+--+--+  
+	 *      | 0| 1| 2| 3| 4| 5| 6| 7|  
+	 *   +--+--+--+--+--+--+--+--+--+  
+	 * S | 0| 0| 1| 2| 3| 4| 5| 6| 7|  
+	 * e |  |  |  |  |  |  |  |  |  |  
+	 * q | 1| 8| 9|10|11|12|13|14|15|  
+	 *   |  |  |  |  |  |  |  |  |  |  
+	 * 1 | 2|16|17|18|19|20|21|22|23|  
+	 *   |  |  |  |  |  |  |  |  |  |  
+	 * / | 3|24|25|26|27|28|29|30|31|  
+	 *   |  |  |  |  |  |  |  |  |  |  
+	 * s | 4|32|33|34|35|36|37|38|39|  
+	 * 1 +--+--l--v--v--v--v--v--v--+  
+	 *                                 
+	 *        +-------------------+    
+	 *        |   (s1 * 8) + s2   |    
+	 *        +-------------------+    
+	 *  
+	 */
+	printf("getting s1 '%zu', s2'%zu', S1 '%d', S2'%d'\n", s1, s2, score_matrix->S1, score_matrix->S2);
 	if (score_matrix == NULL) {
 		ScoreMatrixResult error = {.error_number=3, .success=false, .value=0};
 		return error;
@@ -174,19 +197,27 @@ ScoreMatrixResult score_matrix_get(ScoreMatrix * score_matrix, int s1, int s2) {
 		ScoreMatrixResult error = {.error_number=3, .success=false, .value=0};
 		return error;
 	}
-	if (s1 >= score_matrix->S1 || s1 < 0) {
+	if (s1 > score_matrix->S1) {
 		ScoreMatrixResult error = {.error_number=1, .success=false, .value=0};
 		return error;
 	}
 
-	if (s2 >= score_matrix->S2 || s2 < 0) {
+	if (s2 > score_matrix->S2) {
 		ScoreMatrixResult error = {.error_number=2, .success=false, .value=0};
 		return error;
 	}
 
-	ScoreMatrixResult result = {.error_number=0, .success=true, .value=*(score_matrix->data + s1 * score_matrix->S1 + s2)};
+	size_t offset = (s1 * score_matrix->S1) + s2; 
+	printf("offset: %lu\n", offset);
+
+	ScoreMatrixResult result = {
+		.error_number=0,
+		.success=true,
+		.value=*(score_matrix->data + offset)
+	};
 	return result;
 }
+
 
 void score_matrix_printf(ScoreMatrix * score_matrix, char * seq1, int seq1_len, char * seq2, int seq2_len) {
 	printf("          ");	

@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include "swsw.h"
 
-
 void score_matrix_align(char * seq1, int seq1_len, char * seq2, int seq2_len) {
 	ScoreMatrix * score_matrix = score_matrix_create(seq1_len + 1, seq2_len + 1);
 	if (score_matrix->success != true) {
@@ -82,7 +81,7 @@ PairAlignment* score_matrix_traceback(ScoreMatrix * score_matrix, char * seq1, i
 		return NULL;
 	}
 	do {
-		printf("Looking at %d, %d\n", s1_index, s2_index);
+		DEBUGLOG("Looking at %d, %d\n", s1_index, s2_index);
 		Score nw_score = 0;
 		score_matrix_geta(score_matrix, s1_index - 1, s2_index - 1, nw_score);
 
@@ -93,18 +92,18 @@ PairAlignment* score_matrix_traceback(ScoreMatrix * score_matrix, char * seq1, i
 		score_matrix_geta(score_matrix, s1_index - 1, s2_index, n_score);
 
 		if (nw_score >= w_score && nw_score >= n_score) {
-			printf(" nw_score (%d) was highest adding '%c':'%c', moving to %d, %d\n", nw_score, seq1[s1_index - 1], seq2[s2_index - 1], s1_index -1, s2_index -1);
+			DEBUGLOG(" nw_score (%d) was highest adding '%c':'%c', moving to %d, %d\n", nw_score, seq1[s1_index - 1], seq2[s2_index - 1], s1_index -1, s2_index -1);
 			current_score = nw_score;
 			pair_alignment_prepend(pa, seq1[s1_index - 1], seq2[s2_index - 1]);
 			s1_index--;
 			s2_index--;
 		} else if (w_score >= nw_score && w_score >= n_score) {
-			printf(" w_score (%d) was highest adding '%c':'%c', moving to %d, %d\n", w_score, ' ', seq2[s2_index], s1_index, s2_index -1);
+			DEBUGLOG(" w_score (%d) was highest adding '%c':'%c', moving to %d, %d\n", w_score, ' ', seq2[s2_index], s1_index, s2_index -1);
 			pair_alignment_prepend(pa, ' ', seq2[s2_index - 1]);
 			current_score = w_score;
 			s2_index--;
 		} else {
-			printf(" n_score (%d) was highest adding '%c':'%c', moving to %d, %d\n", n_score, seq1[s1_index], ' ', s1_index -1 , s2_index);
+			DEBUGLOG(" n_score (%d) was highest adding '%c':'%c', moving to %d, %d\n", n_score, seq1[s1_index], ' ', s1_index -1 , s2_index);
 			pair_alignment_prepend(pa, seq1[s1_index], ' ');
 			current_score = n_score;
 			s1_index--;
@@ -119,7 +118,9 @@ ScoreMatrix* score_matrix_create(size_t S1, size_t S2) {
 
 	score_matrix = malloc(sizeof(ScoreMatrix));
 
-	score_matrix->data = calloc(S1 * S2, sizeof(Score));
+	size_t matrix_size = S1 * S2;
+	DEBUGLOG("Creating new matrix total size %zu\n", matrix_size );
+	score_matrix->data = calloc(matrix_size, sizeof(Score));
 	if (score_matrix->data == NULL) {
 		score_matrix->success = false;
 		score_matrix->S1 = 0;
@@ -135,6 +136,7 @@ ScoreMatrix* score_matrix_create(size_t S1, size_t S2) {
 
 
 ScoreMatrixError score_matrix_add(ScoreMatrix * score_matrix, size_t s1, size_t s2, Score value) {
+	DEBUGLOG("s1: %zu, s2: %zu\n", s1, s2);
 	if (score_matrix == NULL) {
 		ScoreMatrixError error = {.error_number=3, .success=false};
 		return error;
@@ -143,16 +145,18 @@ ScoreMatrixError score_matrix_add(ScoreMatrix * score_matrix, size_t s1, size_t 
 		ScoreMatrixError error = {.error_number=3, .success=false};
 		return error;
 	}
-	if (s1 > score_matrix->S1) {
+	if (s1 >= score_matrix->S1) {
 		ScoreMatrixError error = {.error_number=1, .success=false};
 		return error;
 	}
 
-	if (s2 > score_matrix->S2) {
+	if (s2 >= score_matrix->S2) {
 		ScoreMatrixError error = {.error_number=2, .success=false};
 		return error;
 	}
-	size_t offset = (s1 * score_matrix->S1) + s2; 
+	size_t offset = (s1 * (score_matrix->S2)) + s2; 
+
+	DEBUGLOG("S1 %d, S2 %d, offset %zu\n", score_matrix->S1, score_matrix->S2, offset); 
 
 	*(score_matrix->data + offset) = value;
 
@@ -188,7 +192,7 @@ ScoreMatrixResult score_matrix_get(ScoreMatrix * score_matrix, size_t s1, size_t
 	 *        +-------------------+    
 	 *  
 	 */
-	printf("getting s1 '%zu', s2'%zu', S1 '%d', S2'%d'\n", s1, s2, score_matrix->S1, score_matrix->S2);
+	DEBUGLOG("s1: %zu, s2: %zu\n", s1, s2);
 	if (score_matrix == NULL) {
 		ScoreMatrixResult error = {.error_number=3, .success=false, .value=0};
 		return error;
@@ -197,18 +201,18 @@ ScoreMatrixResult score_matrix_get(ScoreMatrix * score_matrix, size_t s1, size_t
 		ScoreMatrixResult error = {.error_number=3, .success=false, .value=0};
 		return error;
 	}
-	if (s1 > score_matrix->S1) {
+	if (s1 >= score_matrix->S1) {
 		ScoreMatrixResult error = {.error_number=1, .success=false, .value=0};
 		return error;
 	}
 
-	if (s2 > score_matrix->S2) {
+	if (s2 >= score_matrix->S2) {
 		ScoreMatrixResult error = {.error_number=2, .success=false, .value=0};
 		return error;
 	}
 
-	size_t offset = (s1 * score_matrix->S1) + s2; 
-	printf("offset: %lu\n", offset);
+	size_t offset = (s1 * (score_matrix->S2)) + s2; 
+	DEBUGLOG("S1 %d, S2 %d, offset %zu\n", score_matrix->S1, score_matrix->S2, offset); 
 
 	ScoreMatrixResult result = {
 		.error_number=0,

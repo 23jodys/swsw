@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <setjmp.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #define UNIT_TESTING 1
 #include <cmocka.h>
@@ -30,9 +31,10 @@ static void test_get_s1_to_large(void **state) {
 	/* Given that the s1 value is exactly the size of the array, confirm
 	 * that the result is not a success */ 
 	(void) state; /* unused */
-	ScoreMatrix * s = score_matrix_create(10, 10);
-	ScoreMatrixResult result = score_matrix_get(s, 10, 0);
+	ScoreMatrix * s = score_matrix_create(5, 8);
+	ScoreMatrixResult result = score_matrix_get(s, 5, 8);
 	assert_false(result.success);
+	score_matrix_free(&s);
 }
 
 static void test_get_s2_to_large(void **state) {
@@ -42,6 +44,7 @@ static void test_get_s2_to_large(void **state) {
 	ScoreMatrix * s = score_matrix_create(10, 10);
 	ScoreMatrixResult result = score_matrix_get(s, 0, 10);
 	assert_false(result.success);
+	score_matrix_free(&s);
 }
 
 static void test_add_s1_to_large(void **state) {
@@ -51,6 +54,7 @@ static void test_add_s1_to_large(void **state) {
 	ScoreMatrix * s = score_matrix_create(10, 10);
 	ScoreMatrixError result = score_matrix_add(s, 10, 0, 55);
 	assert_false(result.success);
+	score_matrix_free(&s);
 }
 
 static void test_add_s2_to_large(void **state) {
@@ -60,6 +64,7 @@ static void test_add_s2_to_large(void **state) {
 	ScoreMatrix * s = score_matrix_create(10, 10);
 	ScoreMatrixError result = score_matrix_add(s, 0, 10, 55);
 	assert_false(result.success);
+	score_matrix_free(&s);
 }
 
 static void test_adds(void **state) {
@@ -99,32 +104,65 @@ static void test_add_negative_s2(void **state) {
 	score_matrix_free(&s);
 }
 
-static void test_add_many(void **state) {
-	for (size_t x=1; x < 10; x++) {
-		for (size_t y=1; y < 10; y++) {
-			ScoreMatrix* m = score_matrix_create(x, y);
-			for (size_t s1=0; s1 <= x; s1++) {
-				for (size_t s2=0; s2 <= y; s2++) {
-					ScoreMatrixError error = score_matrix_add(m, s1, s2, 9999);
-					assert_int_equal(error.error_number, 0);
-					ScoreMatrixResult result = score_matrix_get(m, s1, s2);
-					assert_int_equal(result.error_number, 0);
-					assert_int_equal(result.value, 9999);
-				}
-			}
-		}
-	}
-	
-}
-
-static void test_round_trip(void **state) {
+static void test_round_trip_middle(void **state) {
 	/* Given that the matrix was initialized and a value added to a position,
-	 * verify that that value can be retrieved */
-	(void) state; /* unused */
+	 * verify that that value can be retrieved from the middle of the matrix*/
 	ScoreMatrix * s = score_matrix_create(10, 10);
 	ScoreMatrixError add_result= score_matrix_add(s, 5, 5, 999);
 	assert_true(add_result.success);
 	ScoreMatrixResult get_result = score_matrix_get(s, 5, 5);
+	assert_true(get_result.success);
+	assert_int_equal(get_result.value, 999);
+	score_matrix_free(&s);
+}
+
+/**
+ * @brief Given that we have a matrix, verify that we can store and retrieve a value from the north west corner.
+ */
+static void test_round_trip_nw(void** state) {
+	ScoreMatrix * s = score_matrix_create(10, 10);
+	ScoreMatrixError add_result= score_matrix_add(s, 0, 0, 999);
+	assert_true(add_result.success);
+	ScoreMatrixResult get_result = score_matrix_get(s, 0, 0);
+	assert_true(get_result.success);
+	assert_int_equal(get_result.value, 999);
+	score_matrix_free(&s);
+}
+
+/**
+ * @brief Given that we have a matrix, verify that we can store and retrieve a value from the south west corner.
+ */
+static void test_round_trip_sw(void** state) {
+	ScoreMatrix * s = score_matrix_create(10, 10);
+	ScoreMatrixError add_result= score_matrix_add(s, 9, 0, 999);
+	assert_true(add_result.success);
+	ScoreMatrixResult get_result = score_matrix_get(s, 9, 0);
+	assert_true(get_result.success);
+	assert_int_equal(get_result.value, 999);
+	score_matrix_free(&s);
+}
+
+/**
+ * @brief Given that we have a matrix, verify that we can store and retrieve a value from the south east corner.
+ */
+static void test_round_trip_se(void** state) {
+	ScoreMatrix * s = score_matrix_create(10, 10);
+	ScoreMatrixError add_result= score_matrix_add(s, 9, 9, 999);
+	assert_true(add_result.success);
+	ScoreMatrixResult get_result = score_matrix_get(s, 9, 9);
+	assert_true(get_result.success);
+	assert_int_equal(get_result.value, 999);
+	score_matrix_free(&s);
+}
+
+/**
+ * @brief Given that we have a matrix, verify that we can store and retrieve a value from the north east corner.
+ */
+static void test_round_trip_ne(void** state) {
+	ScoreMatrix * s = score_matrix_create(10, 10);
+	ScoreMatrixError add_result= score_matrix_add(s, 0, 9, 999);
+	assert_true(add_result.success);
+	ScoreMatrixResult get_result = score_matrix_get(s, 0, 9);
 	assert_true(get_result.success);
 	assert_int_equal(get_result.value, 999);
 	score_matrix_free(&s);
@@ -163,6 +201,7 @@ static void test_many_matrices(void **state) {
 		ScoreMatrixResult result = score_matrix_get(matrices[i], 57, 57);
 		assert_true(result.success);
 		assert_int_equal(result.value, i * 10);
+		score_matrix_free(&(matrices[i]));
 	}
 }
 
@@ -250,30 +289,120 @@ static void test_score2(void **state) {
 	//score_matrix_geta(s, 2, 3, result);
 	ScoreMatrixResult result = score_matrix_get(s, 2, 2);
 	//assert_int_equal(result, 19);
-	printf("success: %d, result: %d\n", result.error_number, result.value);
+	//printf("success: %d, result: %d\n", result.error_number, result.value);
 	score_matrix_free(&s);
 }
 
+/** 
+ * @brief Given that we create a large matrix, verify that all cells in the first column can be filled and that accessing outside the matrix fails
+ */
+static void test_fill_lh_matrix(void **state) {
+	ScoreMatrix* s = score_matrix_create(9999,9999);
+	assert_true(s->success);
+	for (size_t s1 = 0; s1 < 9999; s1++) {
+		DEBUGLOG("count %zu\n", s1); 
+		ScoreMatrixError r = score_matrix_add(s, s1, 0, s1);
+		if (s1 < 10000) {
+			assert_true(r.success);
+			ScoreMatrixResult r = score_matrix_get(s, s1, 0);
+			assert_int_equal(r.value, s1);
+		} else {
+			assert_false(r.success);
+		}
+	}
+	score_matrix_free(&s);
+}
+
+/** 
+ * @brief Given that we create a large matrix, verify that all cells in the first column can be filled and that accessing outside the matrix fails
+ */
+static void test_fill_rh_matrix(void **state) {
+	ScoreMatrix* s = score_matrix_create(9999,9999);
+	assert_true(s->success);
+	for (size_t s2 = 0; s2 < 9999; s2++) {
+		//printf("%s:%d (%s) count: %zu\n", __FILE__, __LINE__, __func__, s2);
+		ScoreMatrixError e = score_matrix_add(s, 0, s2, s2);
+		if (s2 < 10000) {
+			assert_true(e.success);
+			ScoreMatrixResult r = score_matrix_get(s, 0, s2);
+			assert_int_equal(r.value, s2);
+		} else {
+			assert_false(e.success);
+		}
+	}
+	score_matrix_free(&s);
+}
+
+/**
+ * @brief Given that we create a very large matrix, verify that we can fill each cell and retrieve it.
+ */
+static void test_fill_full_matrix(void **state) {
+	ScoreMatrix* s = score_matrix_create(10000,10000);
+	assert_true(s->success);
+	for (size_t s1 = 0; s1 < 10000; s1++) {
+		for (size_t s2 = 0; s2 < 10000; s2++) {
+			ScoreMatrixError e = score_matrix_add(s, s1, s2, s1 + s2);
+			assert_true(e.success);
+		}
+	}
+	for (size_t s1 = 0; s1 < 10000; s1++) {
+		for (size_t s2 = 0; s2 < 10000; s2++) {
+			ScoreMatrixResult r = score_matrix_get(s, s1, s2);
+			assert_true(r.success);
+			assert_int_equal(r.value, s1 + s2);
+		}
+	}
+}
+
 int main(void) {
-	const struct CMUnitTest tests[] = {
-		//cmocka_unit_test(test_score2),
-		cmocka_unit_test(test_add_many),
-		//cmocka_unit_test(test_align),
-		//cmocka_unit_test(test_printf),
-		//cmocka_unit_test(test_get_freed_matrix_fails),
-		//cmocka_unit_test(test_add_freed_matrix_fails),
-		//cmocka_unit_test(test_get_s1_to_large), 
-		//cmocka_unit_test(test_get_s2_to_large), 
-		//cmocka_unit_test(test_add_s1_to_large), 
-		//cmocka_unit_test(test_add_s2_to_large), 
-		//cmocka_unit_test(test_round_trip), 
-		//cmocka_unit_test(test_many_matrices), 
-		//cmocka_unit_test(test_create_add_free), 
-		//cmocka_unit_test(test_add_negative_s1), 
-		//cmocka_unit_test(test_add_negative_s2), 
-		//cmocka_unit_test(test_get_negative_s1), 
-		//cmocka_unit_test(test_get_negative_s2), 
-		//cmocka_unit_test(test_traceback),
+	// These tests confirm that values can be stored and retrieved correctly.
+	const struct CMUnitTest round_trip_tests[] = {
+		cmocka_unit_test(test_fill_lh_matrix),
+		cmocka_unit_test(test_fill_rh_matrix),
+		cmocka_unit_test(test_fill_full_matrix),
+		cmocka_unit_test(test_round_trip_nw), 
+		cmocka_unit_test(test_round_trip_sw), 
+		cmocka_unit_test(test_round_trip_se), 
+		cmocka_unit_test(test_round_trip_ne), 
 	};
-	int result = cmocka_run_group_tests(tests, NULL, NULL);
+
+	// These tests confirm that various interfaces perform correctly when given
+	// improper values.
+	const struct CMUnitTest interface_tests[] = {
+		cmocka_unit_test(test_add_negative_s1), 
+		cmocka_unit_test(test_add_negative_s2), 
+		cmocka_unit_test(test_get_negative_s1), 
+		cmocka_unit_test(test_get_negative_s2), 
+		cmocka_unit_test(test_get_freed_matrix_fails),
+		cmocka_unit_test(test_add_freed_matrix_fails),
+		cmocka_unit_test(test_get_s1_to_large), 
+		cmocka_unit_test(test_get_s2_to_large), 
+		cmocka_unit_test(test_add_s1_to_large), 
+		cmocka_unit_test(test_add_s2_to_large), 
+	};
+	const struct CMUnitTest tests[] = {
+		cmocka_unit_test(test_score2),
+		cmocka_unit_test(test_align),
+		cmocka_unit_test(test_printf),
+		cmocka_unit_test(test_many_matrices), 
+		cmocka_unit_test(test_create_add_free), 
+		cmocka_unit_test(test_traceback),
+	};
+
+
+	char* round_trip_env = getenv("TEST_ROUND_TRIP");
+	char* interface_env = getenv("TEST_INTERFACE");
+	char* general_env = getenv("TEST_GENERAL");
+
+	if (round_trip_env != NULL) {
+		cmocka_run_group_tests(round_trip_tests, NULL, NULL);
+	}
+
+	if (interface_env != NULL) {
+		cmocka_run_group_tests(interface_tests, NULL, NULL);
+	}
+
+	if (general_env != NULL) {
+		cmocka_run_group_tests(tests, NULL, NULL);
+	}
 }

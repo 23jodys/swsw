@@ -215,83 +215,6 @@ static void test_printf(void **state) {
 	score_matrix_free(&s);
 }
 
-static void test_align(void **state) {
-	char* seq1 = "ABCCCCGHIJ";
-	char* seq2 = "ABCDEFGHIJ";
-	score_matrix_align(seq1, 9, seq2, 9);
-}
-
-
-static void test_traceback(void **state) {
-	ScoreMatrix* s = score_matrix_create(10,7);
-
-	char* seq1 = "ABCDEFGHIJ";
-	char* seq2 = "ABCDHIJ";
-
-	ScoreConfig score_config;
-	score_config.gap      = -1;
-	score_config.match    =  3; 
-	score_config.mismatch = -3;
-
-	ScoreMatrixError error = score_matrix_score(s, score_config, seq1, 9, seq2, 6);
-	score_matrix_printf(s, seq1, 9, seq2, 6);
-	PairAlignment* pa = score_matrix_traceback(s, seq1, 9, seq2, 6);
-	//assert_non_null(pa);
-	score_matrix_free(&s);
-	pair_alignment_free(&pa);
-	//assert_null(pa);
-	
-}
-
-static void test_score(void **state) {
-	ScoreMatrix * s = score_matrix_create(10,10);
-	char * seq1 = "ABCDDDDHIJ";
-	char * seq2 = "ABCDEFGHIJ";
-
-	ScoreConfig score_config;
-	score_config.gap = 2;
-	score_config.match=3; 
-	score_config.mismatch=-3;
-
-	ScoreMatrixError error = score_matrix_score(s, score_config, seq1, 9, seq2, 9);
-	assert_true(error.success);
-	// Confirm that the highest was found at index 9 in both dimensions
-	assert_int_equal(s->highest_s1, 9);
-	assert_int_equal(s->highest_s2, 9);
-
-	// Confirm one of the scores
-	score_matrix_printf(s, seq1, 9, seq2, 9);
-	Score result = 0;
-	score_matrix_geta(s, 5, 5, result);
-	assert_int_equal(result, 19);
-	score_matrix_free(&s);
-}
-
-static void test_score2(void **state) {
-	ScoreMatrix * s = score_matrix_create(3,3);
-
-	char * seq1 = "ABCABCABCABC";
-	char * seq2 = "ABCABCABCABC";
-
-	ScoreConfig score_config;
-	score_config.gap = 2;
-	score_config.match=3; 
-	score_config.mismatch=-3;
-
-	ScoreMatrixError error = score_matrix_score(s, score_config, seq1, 5, seq2, 8);
-	assert_true(error.success);
-	assert_int_equal(s->highest_s1, 2);
-	assert_int_equal(s->highest_s2, 2);
-
-	// Confirm one of the scores
-	//score_matrix_printf(s, seq1, 3, seq2, 3);
-	//score_matrix_get(s, 0, 0);
-	//score_matrix_geta(s, 2, 3, result);
-	ScoreMatrixResult result = score_matrix_get(s, 2, 2);
-	//assert_int_equal(result, 19);
-	//printf("success: %d, result: %d\n", result.error_number, result.value);
-	score_matrix_free(&s);
-}
 
 /** 
  * @brief Given that we create a large matrix, verify that all cells in the first column can be filled and that accessing outside the matrix fails
@@ -380,13 +303,10 @@ int main(void) {
 		cmocka_unit_test(test_add_s1_to_large), 
 		cmocka_unit_test(test_add_s2_to_large), 
 	};
-	const struct CMUnitTest tests[] = {
-		cmocka_unit_test(test_score2),
-		cmocka_unit_test(test_align),
+	const struct CMUnitTest general_tests[] = {
 		cmocka_unit_test(test_printf),
 		cmocka_unit_test(test_many_matrices), 
 		cmocka_unit_test(test_create_add_free), 
-		cmocka_unit_test(test_traceback),
 	};
 
 
@@ -394,15 +314,28 @@ int main(void) {
 	char* interface_env = getenv("TEST_INTERFACE");
 	char* general_env = getenv("TEST_GENERAL");
 
-	if (round_trip_env != NULL) {
-		cmocka_run_group_tests(round_trip_tests, NULL, NULL);
-	}
+	int round_trip_result = 0; 
+	int interface_result = 0; 
+	int general_result = 0;
 
-	if (interface_env != NULL) {
-		cmocka_run_group_tests(interface_tests, NULL, NULL);
-	}
+#define run_group(group) group ## _result = cmocka_run_group_tests( group ## _tests , NULL, NULL)
 
-	if (general_env != NULL) {
-		cmocka_run_group_tests(tests, NULL, NULL);
+	if (round_trip_env || interface_env || general_env) {
+		if (round_trip_env != NULL) {
+			run_group(round_trip);
+		}
+
+		if (interface_env != NULL) {
+			run_group(interface);
+		}
+
+		if (general_env != NULL) {
+			run_group(general);
+		}
+	} else {
+		run_group(round_trip);
+		run_group(interface);
+		run_group(general);
 	}
+	return round_trip_result + interface_result + general_result;
 }

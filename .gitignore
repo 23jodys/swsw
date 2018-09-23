@@ -5,3 +5,6 @@ latex/
 sw
 test_score_matrix
 test_alignment
+test_sw
+*.dSYM/
+*.dylib

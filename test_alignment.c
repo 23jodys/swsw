@@ -53,8 +53,13 @@ static void test_alignment_free(void **state) {
 
 	// Verify that all pointers have been set to NULL
 	assert_null(pa);
-	//assert_null(*s1);
-	//assert_null(*s2);
+
+	// Verify that the internal pointers to arrays for storing the alignment
+	// are set to NULL, as well.
+	// Normally these cause issues with valgrind to throw invalid reads of size 8
+	// but we supress these normally, see valgrind_suppressions.supp
+	assert_null(*s1);
+	assert_null(*s2);
 }
 
 /**

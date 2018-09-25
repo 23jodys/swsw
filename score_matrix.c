@@ -25,7 +25,7 @@ ScoreMatrix* score_matrix_create(size_t S1, size_t S2) {
 
 
 ScoreMatrixError score_matrix_add(ScoreMatrix * score_matrix, size_t s1, size_t s2, Score value) {
-	DEBUGLOG("s1: %zu, s2: %zu\n", s1, s2);
+	//DEBUGLOG("s1: %zu, s2: %zu\n", s1, s2);
 	if (score_matrix == NULL) {
 		ScoreMatrixError error = {.error_number=3, .success=false};
 		return error;
@@ -45,7 +45,7 @@ ScoreMatrixError score_matrix_add(ScoreMatrix * score_matrix, size_t s1, size_t 
 	}
 	size_t offset = (s1 * (score_matrix->S2)) + s2; 
 
-	DEBUGLOG("S1 %d, S2 %d, offset %zu\n", score_matrix->S1, score_matrix->S2, offset); 
+	//DEBUGLOG("S1 %d, S2 %d, offset %zu\n", score_matrix->S1, score_matrix->S2, offset); 
 
 	*(score_matrix->data + offset) = value;
 
@@ -81,7 +81,7 @@ ScoreMatrixResult score_matrix_get(ScoreMatrix * score_matrix, size_t s1, size_t
 	 *        +-------------------+    
 	 *  
 	 */
-	DEBUGLOG("s1: %zu, s2: %zu\n", s1, s2);
+	//DEBUGLOG("s1: %zu, s2: %zu\n", s1, s2);
 	if (score_matrix == NULL) {
 		ScoreMatrixResult error = {.error_number=3, .success=false, .value=0};
 		return error;
@@ -101,7 +101,7 @@ ScoreMatrixResult score_matrix_get(ScoreMatrix * score_matrix, size_t s1, size_t
 	}
 
 	size_t offset = (s1 * (score_matrix->S2)) + s2; 
-	DEBUGLOG("S1 %d, S2 %d, offset %zu\n", score_matrix->S1, score_matrix->S2, offset); 
+	//DEBUGLOG("S1 %d, S2 %d, offset %zu\n", score_matrix->S1, score_matrix->S2, offset); 
 
 	ScoreMatrixResult result = {
 		.error_number=0,

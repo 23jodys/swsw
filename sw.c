@@ -29,6 +29,7 @@ SwswAlignment* swsw_sw_align(SwswScoreConfig score_config, char * seq1, int seq1
 
 	PairAlignment* alignment_result = swsw_sw_traceback(score_matrix, seq1, seq1_len, seq2, seq2_len);
 
+	score_matrix_printf(score_matrix, seq1, seq1_len, seq2, seq2_len);
 	score_matrix_free(&score_matrix);
 
 	result->success=true;
@@ -107,7 +108,9 @@ PairAlignment* swsw_sw_traceback(ScoreMatrix * score_matrix, char * seq1, int se
 		return NULL;
 	}
 	do {
-		DEBUGLOG("Looking at %d, %d\n", s1_index, s2_index);
+		Score cur_score = 0;
+		score_matrix_geta(score_matrix, s1_index, s2_index, cur_score);
+		DEBUGLOG("Looking at %d, %d with score %d\n", s1_index, s2_index, cur_score );
 		Score nw_score = 0;
 		score_matrix_geta(score_matrix, s1_index - 1, s2_index - 1, nw_score);
 
@@ -130,7 +133,7 @@ PairAlignment* swsw_sw_traceback(ScoreMatrix * score_matrix, char * seq1, int se
 			s2_index--;
 		} else {
 			DEBUGLOG(" n_score (%d) was highest adding '%c':'%c', moving to %d, %d\n", n_score, seq1[s1_index], ' ', s1_index -1 , s2_index);
-			pair_alignment_prepend(pa, seq1[s1_index], ' ');
+			pair_alignment_prepend(pa, seq1[s1_index - 1], ' ');
 			current_score = n_score;
 			s1_index--;
 		}

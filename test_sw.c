@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cmocka.h>
+#include "sds/sds.h"
 #include "swsw.h"
 
 /** 
@@ -11,14 +12,47 @@
  */
 static void test_sw_align_golden(void **state) {
 	char* seq1 = "ABCDEFGHIJ";
-	char* seq2 = "ABCDEFGHIJ";
+	char* seq2 = "ABCEFGHIJ";
 	SwswScoreConfig score_config = {.gap=-1, .match=3, .mismatch=-3};
-	SwswAlignment* result = swsw_sw_align(score_config, seq1, 10, seq2, 10);
+	SwswAlignment* result = swsw_sw_align(score_config, seq1, 10, seq2, 9);
 	assert_true(result->success);
 	assert_int_equal(result->error_number, 0);
 	assert_non_null(result->alignment);
 	pair_alignment_sprint(result->alignment);
 	swsw_alignment_free(&result);
+}
+
+/**
+ * @brief Given that we have two short sequences, verify that we get a correct cigar string
+ */
+static void test_cigar_golden(void** state) {
+	// https://sites.google.com/site/bioinformaticsremarks/bioinfo/sam-bam-format/what-is-a-cigar
+	sds seq1 = sdsnew("CCATACTGAACTGACTAAC");
+	sds seq2 = sdsnew("ACTAGAATGGCT");
+
+	size_t seq1_len = sdslen(seq1);
+	size_t seq2_len = sdslen(seq2);
+
+	SwswScoreConfig score_config = {.gap=-1, .match=3, .mismatch=-3};
+	SwswAlignment* result = swsw_sw_align(score_config, seq1, seq1_len, seq2, seq2_len);
+	assert_true(result->success);
+	
+	pair_alignment_sprint(result->alignment);
+
+	CigarString* cigar = cigar_string_create(result->alignment);
+	printf("%s\n", cigar->cigar);
+
+	sds expected = sdsnew("3M1I3M1D5M");
+
+	assert_int_equal(cigar->pos, 5);
+	assert_string_equal(cigar->cigar, expected);
+
+	cigar_string_free(&cigar);
+
+	swsw_alignment_free(&result);
+	sdsfree(seq1);
+	sdsfree(seq2);
+	sdsfree(expected);
 }
 
 static void test_traceback(void **state) {
@@ -66,12 +100,13 @@ static void test_score(void **state) {
 }
 
 
-
+//
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		cmocka_unit_test(test_score),
 		cmocka_unit_test(test_sw_align_golden),
 		cmocka_unit_test(test_traceback),
+		cmocka_unit_test(test_cigar_golden),
 	};
 	cmocka_run_group_tests(tests, NULL, NULL);
 }

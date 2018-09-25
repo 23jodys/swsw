@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "sds/sds.h"
 #include "swsw.h"
 
 PairAlignment* pair_alignment_create(int length) {
@@ -35,7 +36,13 @@ PairAlignmentError pair_alignment_prepend(PairAlignment * pa, char c1, char c2) 
 
 void pair_alignment_sprint(PairAlignment* pa) {
 	for(int i=pa->_index + 1; i < pa->length; i++) {
-		printf("%c %c\n", pa->s1[i], pa->s2[i]);
+		char sym = 'x';
+		if (pa->s1[i] == pa->s2[i]) {
+			sym = '-';
+		} else {
+			sym = ' ';
+		}
+		printf("%c%c%c\n", pa->s1[i], sym, pa->s2[i]);
 	}
 }
 
@@ -49,3 +56,14 @@ void pair_alignment_free(PairAlignment** pa) {
 	*pa = NULL;
 }
 
+CigarString* cigar_string_create(PairAlignment* pa) {
+	CigarString* result = malloc(sizeof(CigarString));
+	result->cigar = sdsempty();
+	return result;
+}
+
+void cigar_string_free(CigarString** cs) {
+	sdsfree((*cs)->cigar);
+	free(*cs);
+	*cs = NULL;
+}

@@ -11,8 +11,8 @@ test_alignment: CFLAGS += -g
 test_alignment: alignment.o test_alignment.o
 
 test_sw: LDLIBS += -lcmocka
-test_sw: CFLAGS += -g 
-test_sw: sw.o alignment.o score_matrix.o test_sw.o
+test_sw: CFLAGS += -g  -DDEBUG=1
+test_sw: sw.o alignment.o score_matrix.o test_sw.o sds/sds.o 
 
 
 valgrind_%: %
@@ -32,4 +32,4 @@ TAGS: $(SRCS) alignment.h score_matrix.h swsw.h
 
 .PHONY: clean
 clean:
-	rm -rf *.o test_score_matrix test_alignment test_sw
+	rm -rf *.o test_score_matrix test_alignment test_sw sds/*.o

@@ -29,7 +29,7 @@ SwswAlignment* swsw_sw_align(SwswScoreConfig score_config, char * seq1, int seq1
 
 	PairAlignment* alignment_result = swsw_sw_traceback(score_matrix, seq1, seq1_len, seq2, seq2_len);
 
-	score_matrix_printf(score_matrix, seq1, seq1_len, seq2, seq2_len);
+	// score_matrix_printf(score_matrix, seq1, seq1_len, seq2, seq2_len);
 	score_matrix_free(&score_matrix);
 
 	result->success=true;
@@ -69,7 +69,7 @@ ScoreMatrixError swsw_sw_score(
 			score_matrix_geta(score_matrix, s1_index - 1, s2_index, n_score);
 			n_score += score_config.gap;
 
-			//printf("nw_score: %d, w_score: %d, n_score %d\n", nw_score, w_score, n_score);
+			printf("nw_score: %d, w_score: %d, n_score %d\n", nw_score, w_score, n_score);
 			
 			int score;
 			if (nw_score >= w_score && nw_score >= n_score && nw_score >0 ) {
@@ -83,8 +83,12 @@ ScoreMatrixError swsw_sw_score(
 			}
 
 			if (score > max) {
+				DEBUGLOG("score %d was higher that %d, setting highest s1: %d, highest s2: %d", 
+						score, max, s1_index, s2_index
+				);
 				score_matrix->highest_s1 = s1_index;
 				score_matrix->highest_s2 = s2_index;
+				max = score;
 			}
 
 			seq2_index++;

@@ -127,7 +127,7 @@ void score_matrix_printf(ScoreMatrix * score_matrix, char * seq1, int seq1_len, 
 		for(int i2=0; i2 < score_matrix->S2; i2++) { 
 			ScoreMatrixResult result = score_matrix_get(score_matrix, i1, i2);
 			if (result.success) {
-				printf("%04d ", result.value); 
+				printf("% 4d ", result.value); 
 			}
 		} 
 		printf("\n"); 

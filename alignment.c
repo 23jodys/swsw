@@ -59,6 +59,7 @@ void pair_alignment_free(PairAlignment** pa) {
 CigarString* cigar_string_create(PairAlignment* pa) {
 	CigarString* result = malloc(sizeof(CigarString));
 	result->cigar = sdsempty();
+	result->pos = 0;
 	return result;
 }
 

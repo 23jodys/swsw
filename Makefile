@@ -1,14 +1,14 @@
 SRCS := score_matrix.c alignment.c sw.c
 OBJS := $(SRCS:.c=.o)
-CC   := clang
+CC   := clang-7
 
 test_score_matrix: LDLIBS += -lcmocka
 test_score_matrix: CFLAGS += -g 
-test_score_matrix: score_matrix.o test_score_matrix.o alignment.o
+test_score_matrix: score_matrix.o test_score_matrix.o alignment.o sds/sds.o
 
 test_alignment: LDLIBS += -lcmocka 
 test_alignment: CFLAGS += -g 
-test_alignment: alignment.o test_alignment.o
+test_alignment: alignment.o test_alignment.o sds/sds.o
 
 test_sw: LDLIBS += -lcmocka
 test_sw: CFLAGS += -g  -DDEBUG=1

@@ -7,7 +7,7 @@ test_score_matrix: CFLAGS += -g
 test_score_matrix: score_matrix.o test_score_matrix.o alignment.o sds/sds.o
 
 test_alignment: LDLIBS += -lcmocka 
-test_alignment: CFLAGS += -g 
+test_alignment: CFLAGS += -g
 test_alignment: alignment.o test_alignment.o sds/sds.o
 
 test_sw: LDLIBS += -lcmocka

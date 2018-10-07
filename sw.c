@@ -3,7 +3,7 @@
 #include <string.h>
 #include "swsw.h"
 
-SwswAlignment* swsw_sw_align(SwswScoreConfig score_config, char * seq1, int seq1_len, char * seq2, int seq2_len) {
+SwswAlignment* swsw_sw_align(SwswScoreConfig score_config, sds seq1, int seq1_len, sds seq2, int seq2_len) {
 	// For smith waterman we create a matrix with each dimension one larger that the sequence
 	// length so that we can have the first row and column set to zero so that the traceback
 	// is guaranteed to stop.
@@ -29,7 +29,7 @@ SwswAlignment* swsw_sw_align(SwswScoreConfig score_config, char * seq1, int seq1
 
 	PairAlignment* alignment_result = swsw_sw_traceback(score_matrix, seq1, seq1_len, seq2, seq2_len);
 
-	// score_matrix_printf(score_matrix, seq1, seq1_len, seq2, seq2_len);
+	score_matrix_printf(score_matrix, seq1, seq1_len, seq2, seq2_len);
 	score_matrix_free(&score_matrix);
 
 	result->success=true;

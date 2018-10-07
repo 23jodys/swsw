@@ -10,8 +10,13 @@ PairAlignment* pair_alignment_create(int length) {
 	if(_alignment == NULL) {
 		return NULL;
 	}
-	_alignment->s1 = calloc(sizeof(char), length);
-	_alignment->s2 = calloc(sizeof(char), length);
+
+	_alignment->s1 = sdsempty();
+	_alignment->s1 = sdsgrowzero(_alignment->s1, length);
+
+	_alignment->s2 = sdsempty();
+	_alignment->s2 = sdsgrowzero(_alignment->s2, length);
+
 	if (!_alignment || !_alignment->s1 || !_alignment->s2) {
 		return NULL;
 	}
@@ -28,6 +33,7 @@ PairAlignmentError pair_alignment_prepend(PairAlignment * pa, char c1, char c2) 
 	} 
 	pa->s1[pa->_index] = c1;	
 	pa->s2[pa->_index] = c2;	
+
 	pa->_index -= 1;
 	PairAlignmentError error = {.success=true, .error_number=0};
 	DEBUGLOG("After -- c1: %c, c2: %c, index: %d, length: %d\n", c1, c2, pa->_index, pa->length);
@@ -46,9 +52,17 @@ void pair_alignment_sprint(PairAlignment* pa) {
 	}
 }
 
+sds pair_alignment_get_reference(PairAlignment* pa) {
+	return pa->s2 + pa->_index + 1;
+}
+
+sds pair_alignment_get_query(PairAlignment* pa) {
+	return pa->s1 + pa->_index + 1;
+}
+
 void pair_alignment_free(PairAlignment** pa) {
-	free((*(*pa)).s1);
-	free((*(*pa)).s2);
+	sdsfree((*(*pa)).s1);
+	sdsfree((*(*pa)).s2);
 	(*(*pa)).s1 = NULL;
 	(*(*pa)).s2 = NULL;
 	free(*pa);

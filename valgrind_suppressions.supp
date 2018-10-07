@@ -6,3 +6,11 @@
    fun:_cmocka_run_group_tests
    fun:main
 }
+{
+   <test_alignment_free_Addr8_debian>
+   Memcheck:Addr8
+   fun:test_alignment_free
+   obj:/usr/lib/x86_64-linux-gnu/libcmocka.so.0.3.1
+   fun:_cmocka_run_group_tests
+   fun:main
+}

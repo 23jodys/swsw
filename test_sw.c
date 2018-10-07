@@ -11,8 +11,8 @@
  * @brief Given that we ask for a perfectly reasonable alignment, verify that we get a successful result and a 0 error number and a non null alignment
  */
 static void test_sw_align_golden(void **state) {
-	char* seq1 = "ABCDEFGHIJ";
-	char* seq2 = "ABCEFGHIJ";
+	sds seq1 = sdsnew("ABCDEFGHIJ");
+	sds seq2 = sdsnew("ABCEFGHIJ");
 	SwswScoreConfig score_config = {.gap=-1, .match=3, .mismatch=-3};
 	SwswAlignment* result = swsw_sw_align(score_config, seq1, 10, seq2, 9);
 	assert_true(result->success);
@@ -20,6 +20,8 @@ static void test_sw_align_golden(void **state) {
 	assert_non_null(result->alignment);
 	pair_alignment_sprint(result->alignment);
 	swsw_alignment_free(&result);
+	sdsfree(seq1);
+	sdsfree(seq2);
 }
 
 /**
@@ -72,8 +74,26 @@ static void test_traceback_small_gap(void **state) {
 	SwswScoreConfig score_config = {.gap=-2, .match=3, .mismatch=-3};
 	SwswAlignment* result = swsw_sw_align(score_config, seq1, seq1_len, seq2, seq2_len);
 	assert_true(result->success);
-	
+
 	pair_alignment_sprint(result->alignment);
+
+	sds reference_alignment = pair_alignment_get_reference(result->alignment);
+	sds query_alignment = pair_alignment_get_query(result->alignment);
+
+	// Should be
+	// Reference: ACT
+	// Query:     A T
+	
+	printf("Reference: %s\n", reference_alignment);
+	printf("    Query: %s\n", query_alignment);
+
+	assert_string_equal("A T", query_alignment);
+	assert_string_equal("ACT", reference_alignment);
+
+
+	swsw_alignment_free(&result);
+	sdsfree(seq1);
+	sdsfree(seq2);
 }
 
 /**
@@ -142,6 +162,7 @@ static void test_score(void **state) {
 
 	ScoreMatrixError error = swsw_sw_score(s, score_config, seq1, 9, seq2, 9);
 	assert_true(error.success);
+
 	// Confirm that the highest was found at index 9 in both dimensions
 	assert_int_equal(s->highest_s1, 9);
 	assert_int_equal(s->highest_s2, 9);
@@ -154,15 +175,14 @@ static void test_score(void **state) {
 }
 
 
-//
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		// cmocka_unit_test(test_score),
 		// cmocka_unit_test(test_sw_align_golden),
 		// cmocka_unit_test(test_traceback),
 		// cmocka_unit_test(test_cigar_golden),
-		// cmocka_unit_test(test_traceback_small_gap),
-		cmocka_unit_test(test_cigar_simple01),
+		cmocka_unit_test(test_traceback_small_gap),
+		// cmocka_unit_test(test_cigar_simple01),
 	};
 	cmocka_run_group_tests(tests, NULL, NULL);
 }

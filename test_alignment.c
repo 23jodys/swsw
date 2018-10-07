@@ -72,12 +72,33 @@ static void test_alignment_free_many(void **state) {
 	}
 }
 
+/**
+ * @brief Given that we ask to retrieve the reference alignment, verify that it is returned correctly
+ */
+static void test_pair_alignment_get_reference_e2e(void **state) {
+	PairAlignment* test_alignment = pair_alignment_create(20);
+
+	assert_non_null(test_alignment);
+
+	test_alignment->s1 = sdscat(test_alignment->s1, "        CGAAAGTTTTGC");
+	test_alignment->s2 = sdscat(test_alignment->s2, "          AAA TTTT C");
+
+	printf("before: %s\n", test_alignment->s1);
+
+	sds observed_reference = pair_alignment_get_reference(test_alignment);
+
+	assert_string_equal(observed_reference, "fuck");
+
+	pair_alignment_free(&test_alignment);
+}
+
 int main(void) {
 	const struct CMUnitTest tests[] = {
 		cmocka_unit_test(test_alignment_create),
 		cmocka_unit_test(test_alignment_free),
 		cmocka_unit_test(test_pa_too_many_prepend),
 		cmocka_unit_test(test_alignment_free_many),
+		cmocka_unit_test(test_pair_alignment_get_reference_e2e),
 	};
 	int result = cmocka_run_group_tests(tests, NULL, NULL);
 }

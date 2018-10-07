@@ -82,12 +82,12 @@ static void test_traceback_small_gap(void **state) {
 
 	// Should be
 	// Reference: ACT
-	// Query:     A T
+	// Query:     A-T
 	
 	printf("Reference: %s\n", reference_alignment);
 	printf("    Query: %s\n", query_alignment);
 
-	assert_string_equal("A T", query_alignment);
+	assert_string_equal("A-T", query_alignment);
 	assert_string_equal("ACT", reference_alignment);
 
 
@@ -114,7 +114,7 @@ static void test_cigar_golden(void** state) {
 	pair_alignment_sprint(result->alignment);
 
 	CigarString* cigar = cigar_string_create(result->alignment);
-	printf("%s\n", cigar->cigar);
+	//printf("%s\n", cigar->cigar);
 
 	sds expected = sdsnew("3M1I3M1D5M");
 
@@ -168,7 +168,7 @@ static void test_score(void **state) {
 	assert_int_equal(s->highest_s2, 9);
 
 	// Confirm one of the scores
-	Score result = 0;
+	ScoreValue result = 0;
 	score_matrix_geta(s, 5, 5, result);
 	assert_int_equal(result, 19);
 	score_matrix_free(&s);
@@ -177,12 +177,12 @@ static void test_score(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		// cmocka_unit_test(test_score),
-		// cmocka_unit_test(test_sw_align_golden),
-		// cmocka_unit_test(test_traceback),
-		// cmocka_unit_test(test_cigar_golden),
+		cmocka_unit_test(test_score),
+		cmocka_unit_test(test_sw_align_golden),
+		cmocka_unit_test(test_traceback),
+		cmocka_unit_test(test_cigar_golden),
 		cmocka_unit_test(test_traceback_small_gap),
-		// cmocka_unit_test(test_cigar_simple01),
+		cmocka_unit_test(test_cigar_simple01),
 	};
 	cmocka_run_group_tests(tests, NULL, NULL);
 }

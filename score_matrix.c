@@ -24,8 +24,9 @@ ScoreMatrix* score_matrix_create(size_t S1, size_t S2) {
 }
 
 
-ScoreMatrixError score_matrix_add(ScoreMatrix * score_matrix, size_t s1, size_t s2, Score value) {
+ScoreMatrixError score_matrix_add(ScoreMatrix * score_matrix, size_t s1, size_t s2, Score score) {
 	//DEBUGLOG("s1: %zu, s2: %zu\n", s1, s2);
+	DEBUGLOG("score.value: %lu, score.direction: %d\n", score.value, score.direction );
 	if (score_matrix == NULL) {
 		ScoreMatrixError error = {.error_number=3, .success=false};
 		return error;
@@ -45,9 +46,10 @@ ScoreMatrixError score_matrix_add(ScoreMatrix * score_matrix, size_t s1, size_t 
 	}
 	size_t offset = (s1 * (score_matrix->S2)) + s2; 
 
-	//DEBUGLOG("S1 %d, S2 %d, offset %zu\n", score_matrix->S1, score_matrix->S2, offset); 
+	*(score_matrix->data + offset) = score;
 
-	*(score_matrix->data + offset) = value;
+	DEBUGLOG("S1 %d, S2 %d, offset %zu, value %lu, direction %d\n", score_matrix->S1, score_matrix->S2, offset, (*(score_matrix->data + offset)).value,  (*(score_matrix->data + offset)).direction); 
+
 
 	ScoreMatrixError error = {.error_number=0, .success=true};
 	return error;
@@ -83,20 +85,24 @@ ScoreMatrixResult score_matrix_get(ScoreMatrix * score_matrix, size_t s1, size_t
 	 */
 	//DEBUGLOG("s1: %zu, s2: %zu\n", s1, s2);
 	if (score_matrix == NULL) {
-		ScoreMatrixResult error = {.error_number=3, .success=false, .value=0};
+		Score empty_score = {.value=0, .direction=DirNone};
+		ScoreMatrixResult error = {.error_number=3, .success=false, .score=empty_score};
 		return error;
 	}
 	if (score_matrix->data == NULL) {
-		ScoreMatrixResult error = {.error_number=3, .success=false, .value=0};
+		Score empty_score = {.value=0, .direction=DirNone};
+		ScoreMatrixResult error = {.error_number=3, .success=false, .score=empty_score};
 		return error;
 	}
 	if (s1 >= score_matrix->S1) {
-		ScoreMatrixResult error = {.error_number=1, .success=false, .value=0};
+		Score empty_score = {.value=0, .direction=DirNone};
+		ScoreMatrixResult error = {.error_number=1, .success=false, .score=empty_score};
 		return error;
 	}
 
 	if (s2 >= score_matrix->S2) {
-		ScoreMatrixResult error = {.error_number=2, .success=false, .value=0};
+		Score empty_score = {.value=0, .direction=DirNone};
+		ScoreMatrixResult error = {.error_number=2, .success=false, .score=empty_score};
 		return error;
 	}
 
@@ -106,7 +112,7 @@ ScoreMatrixResult score_matrix_get(ScoreMatrix * score_matrix, size_t s1, size_t
 	ScoreMatrixResult result = {
 		.error_number=0,
 		.success=true,
-		.value=*(score_matrix->data + offset)
+		.score=*(score_matrix->data + offset)
 	};
 	return result;
 }
@@ -127,7 +133,18 @@ void score_matrix_printf(ScoreMatrix * score_matrix, char * seq1, int seq1_len, 
 		for(int i2=0; i2 < score_matrix->S2; i2++) { 
 			ScoreMatrixResult result = score_matrix_get(score_matrix, i1, i2);
 			if (result.success) {
-				printf("% 4d ", result.value); 
+				char dir;
+				if (result.score.direction == 0) {
+					dir = '*';
+				} else if (result.score.direction == 1) {
+					dir = '\\';
+				} else if (result.score.direction == 2) {
+					dir = '-';
+				} else if (result.score.direction == 3) {
+					dir = '|';
+				}
+
+				printf("%c%03lu ", dir, result.score.value); 
 			}
 		} 
 		printf("\n"); 

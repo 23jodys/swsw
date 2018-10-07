@@ -3,7 +3,14 @@
 /** @file */
 #include <stdbool.h>
 
-typedef int Score;
+enum ScoreDirection { DirNone=0, DirNw=1, DirW=2, DirN=3 };
+
+typedef int64_t ScoreValue;
+
+typedef struct Score {
+	ScoreValue value;
+	enum ScoreDirection direction; 
+} Score;
 
 typedef struct ScoreMatrix {
 	Score * data;
@@ -22,7 +29,7 @@ typedef struct ScoreMatrixError {
 typedef struct ScoreMatrixResult {
 	int error_number;
 	bool success;
-	Score value;
+	Score score;
 } ScoreMatrixResult;
 
 
@@ -37,7 +44,7 @@ typedef struct ScoreMatrixResult {
  */
 #define score_matrix_geta(score_matrix, s1, s2, out) do { \
 	ScoreMatrixResult __xyzresult = score_matrix_get(score_matrix, s1, s2); \
-	if (__xyzresult.success == true) {out += __xyzresult.value;} \
+	if (__xyzresult.success == true) {out += __xyzresult.score.value;} \
 	} while(0);
 
 /**
@@ -57,10 +64,11 @@ ScoreMatrix * score_matrix_create(size_t S1, size_t S2);
  * which adds using the sequence index. 
  *
  * @param [in,out] score_matrix is modified with the requested value
- * @param [in] s1, the location on the sequence 1 dimension
- * @param [in] s2, the location on the sequence 2 dimension
+ * @param [in] s1, the location on the sequence 1 dimension (query)
+ * @param [in] s2, the location on the sequence 2 dimension (reference)
+ * @param [in] score, the value and direction to store in this cell
  */
-ScoreMatrixError score_matrix_add(ScoreMatrix *, size_t, size_t, Score);
+ScoreMatrixError score_matrix_add(ScoreMatrix *, size_t s1 , size_t s2, Score score);
 
 /**
  * @brief add a single value to the matrix

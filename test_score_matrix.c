@@ -15,7 +15,8 @@ static void test_add_freed_matrix_fails(void **state) {
 	ScoreMatrix * s = score_matrix_create(10, 10);
 	score_matrix_free(&s);
 	assert_null(s);
-	ScoreMatrixError result = score_matrix_add(s, 0, 0, 10);
+	Score score = {.value=10,.direction=0};
+	ScoreMatrixError result = score_matrix_add(s, 0, 0, score);
 	assert_false(result.success);
 }
 
@@ -52,7 +53,8 @@ static void test_add_s1_to_large(void **state) {
 	 * that the result is not a success */ 
 	(void) state; /* unused */
 	ScoreMatrix * s = score_matrix_create(10, 10);
-	ScoreMatrixError result = score_matrix_add(s, 10, 0, 55);
+	Score score = {.value=55, .direction=0};
+	ScoreMatrixError result = score_matrix_add(s, 10, 0, score);
 	assert_false(result.success);
 	score_matrix_free(&s);
 }
@@ -62,7 +64,8 @@ static void test_add_s2_to_large(void **state) {
 	 * that the result is not a success */ 
 	(void) state; /* unused */
 	ScoreMatrix * s = score_matrix_create(10, 10);
-	ScoreMatrixError result = score_matrix_add(s, 0, 10, 55);
+	Score score = {.value=55, .direction=0};
+	ScoreMatrixError result = score_matrix_add(s, 0, 10, score);
 	assert_false(result.success);
 	score_matrix_free(&s);
 }
@@ -91,7 +94,8 @@ static void test_get_negative_s2(void **state) {
 static void test_add_negative_s1(void **state) {
 	(void) state; /* unused */
 	ScoreMatrix * s = score_matrix_create(10, 10);
-	ScoreMatrixError result = score_matrix_add(s, -10, 0, 55);
+	Score score = {.value=55, .direction=0};
+	ScoreMatrixError result = score_matrix_add(s, -10, 0, score);
 	assert_false(result.success);
 	score_matrix_free(&s);
 }
@@ -99,7 +103,8 @@ static void test_add_negative_s1(void **state) {
 static void test_add_negative_s2(void **state) {
 	(void) state; /* unused */
 	ScoreMatrix * s = score_matrix_create(10, 10);
-	ScoreMatrixError result = score_matrix_add(s, 0, -10, 55);
+	Score score = {.value=55, .direction=DirNone};
+	ScoreMatrixError result = score_matrix_add(s, 0, -10, score);
 	assert_false(result.success);
 	score_matrix_free(&s);
 }
@@ -108,11 +113,12 @@ static void test_round_trip_middle(void **state) {
 	/* Given that the matrix was initialized and a value added to a position,
 	 * verify that that value can be retrieved from the middle of the matrix*/
 	ScoreMatrix * s = score_matrix_create(10, 10);
-	ScoreMatrixError add_result= score_matrix_add(s, 5, 5, 999);
+	Score score = {.value=999, .direction=DirNone};
+	ScoreMatrixError add_result= score_matrix_add(s, 5, 5, score);
 	assert_true(add_result.success);
 	ScoreMatrixResult get_result = score_matrix_get(s, 5, 5);
 	assert_true(get_result.success);
-	assert_int_equal(get_result.value, 999);
+	assert_int_equal(get_result.score.value, 999);
 	score_matrix_free(&s);
 }
 
@@ -121,24 +127,26 @@ static void test_round_trip_middle(void **state) {
  */
 static void test_round_trip_nw(void** state) {
 	ScoreMatrix * s = score_matrix_create(10, 10);
-	ScoreMatrixError add_result= score_matrix_add(s, 0, 0, 999);
+	Score score = {.value=999, .direction=DirNone};
+	ScoreMatrixError add_result= score_matrix_add(s, 0, 0, score);
 	assert_true(add_result.success);
 	ScoreMatrixResult get_result = score_matrix_get(s, 0, 0);
 	assert_true(get_result.success);
-	assert_int_equal(get_result.value, 999);
+	assert_int_equal(get_result.score.value, 999);
 	score_matrix_free(&s);
 }
 
 /**
- * @brief Given that we have a matrix, verify that we can store and retrieve a value from the south west corner.
+ * @brief Given that we have a matrix, verify that we can store and retrieve a value from the west corner.
  */
 static void test_round_trip_sw(void** state) {
 	ScoreMatrix * s = score_matrix_create(10, 10);
-	ScoreMatrixError add_result= score_matrix_add(s, 9, 0, 999);
+	Score score = {.value=999, .direction=DirNone};
+	ScoreMatrixError add_result= score_matrix_add(s, 9, 0, score);
 	assert_true(add_result.success);
 	ScoreMatrixResult get_result = score_matrix_get(s, 9, 0);
 	assert_true(get_result.success);
-	assert_int_equal(get_result.value, 999);
+	assert_int_equal(get_result.score.value, 999);
 	score_matrix_free(&s);
 }
 
@@ -147,11 +155,12 @@ static void test_round_trip_sw(void** state) {
  */
 static void test_round_trip_se(void** state) {
 	ScoreMatrix * s = score_matrix_create(10, 10);
-	ScoreMatrixError add_result= score_matrix_add(s, 9, 9, 999);
+	Score score = {.value=999, .direction=DirNone};
+	ScoreMatrixError add_result= score_matrix_add(s, 9, 9, score);
 	assert_true(add_result.success);
 	ScoreMatrixResult get_result = score_matrix_get(s, 9, 9);
 	assert_true(get_result.success);
-	assert_int_equal(get_result.value, 999);
+	assert_int_equal(get_result.score.value, 999);
 	score_matrix_free(&s);
 }
 
@@ -160,11 +169,12 @@ static void test_round_trip_se(void** state) {
  */
 static void test_round_trip_ne(void** state) {
 	ScoreMatrix * s = score_matrix_create(10, 10);
-	ScoreMatrixError add_result= score_matrix_add(s, 0, 9, 999);
+	Score score = {.value=999, .direction=DirNone};
+	ScoreMatrixError add_result= score_matrix_add(s, 0, 9, score);
 	assert_true(add_result.success);
 	ScoreMatrixResult get_result = score_matrix_get(s, 0, 9);
 	assert_true(get_result.success);
-	assert_int_equal(get_result.value, 999);
+	assert_int_equal(get_result.score.value, 999);
 	score_matrix_free(&s);
 }
 
@@ -172,11 +182,12 @@ static void test_create_add_free(void **state) {
 	/* Give that we create a matrix and add a value to it, confirm that after it is freed we cannot retrieve results */
 	(void) state;
 	ScoreMatrix * s = score_matrix_create(10, 10);
-	ScoreMatrixError add_result= score_matrix_add(s, 5, 5, 999);
+	Score score = {.value=999, .direction=DirNone};
+	ScoreMatrixError add_result= score_matrix_add(s, 5, 5, score);
 	/* Should work because this is a valid matrix */
 	ScoreMatrixResult get_result = score_matrix_get(s, 5, 5);
 	assert_true(get_result.success);
-	assert_int_equal(get_result.value, 999);
+	assert_int_equal(get_result.score.value, 999);
 	/* Free the matrix */
 	score_matrix_free(&s);
 
@@ -194,13 +205,14 @@ static void test_many_matrices(void **state) {
 	ScoreMatrix * matrices[200];
 	for (int i=0; i < 200; i++) {
 		matrices[i] = score_matrix_create(100,100);	
-		score_matrix_add(matrices[i], 57, 57, i * 10);
+		Score score = {.value=i*10, .direction=DirNone};
+		score_matrix_add(matrices[i], 57, 57, score);
 	}
 
 	for (int i=0; i < 200; i++) {
 		ScoreMatrixResult result = score_matrix_get(matrices[i], 57, 57);
 		assert_true(result.success);
-		assert_int_equal(result.value, i * 10);
+		assert_int_equal(result.score.value, i * 10);
 		score_matrix_free(&(matrices[i]));
 	}
 }
@@ -224,11 +236,12 @@ static void test_fill_lh_matrix(void **state) {
 	assert_true(s->success);
 	for (size_t s1 = 0; s1 < 9999; s1++) {
 		DEBUGLOG("count %zu\n", s1); 
-		ScoreMatrixError r = score_matrix_add(s, s1, 0, s1);
+		Score score = {.value=s1, .direction=DirNone};
+		ScoreMatrixError r = score_matrix_add(s, s1, 0, score);
 		if (s1 < 10000) {
 			assert_true(r.success);
 			ScoreMatrixResult r = score_matrix_get(s, s1, 0);
-			assert_int_equal(r.value, s1);
+			assert_int_equal(r.score.value, s1);
 		} else {
 			assert_false(r.success);
 		}
@@ -244,11 +257,12 @@ static void test_fill_rh_matrix(void **state) {
 	assert_true(s->success);
 	for (size_t s2 = 0; s2 < 9999; s2++) {
 		//printf("%s:%d (%s) count: %zu\n", __FILE__, __LINE__, __func__, s2);
-		ScoreMatrixError e = score_matrix_add(s, 0, s2, s2);
+		Score score = {.value=s2, .direction=DirNone};
+		ScoreMatrixError e = score_matrix_add(s, 0, s2, score);
 		if (s2 < 10000) {
 			assert_true(e.success);
 			ScoreMatrixResult r = score_matrix_get(s, 0, s2);
-			assert_int_equal(r.value, s2);
+			assert_int_equal(r.score.value, s2);
 		} else {
 			assert_false(e.success);
 		}
@@ -264,7 +278,8 @@ static void test_fill_full_matrix(void **state) {
 	assert_true(s->success);
 	for (size_t s1 = 0; s1 < 10000; s1++) {
 		for (size_t s2 = 0; s2 < 10000; s2++) {
-			ScoreMatrixError e = score_matrix_add(s, s1, s2, s1 + s2);
+			Score score = {.value = s1 + s2, .direction = DirNone};
+			ScoreMatrixError e = score_matrix_add(s, s1, s2, score);
 			assert_true(e.success);
 		}
 	}
@@ -272,7 +287,7 @@ static void test_fill_full_matrix(void **state) {
 		for (size_t s2 = 0; s2 < 10000; s2++) {
 			ScoreMatrixResult r = score_matrix_get(s, s1, s2);
 			assert_true(r.success);
-			assert_int_equal(r.value, s1 + s2);
+			assert_int_equal(r.score.value, s1 + s2);
 		}
 	}
 }

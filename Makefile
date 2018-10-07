@@ -11,9 +11,10 @@ test_alignment: CFLAGS += -g
 test_alignment: alignment.o test_alignment.o sds/sds.o
 
 test_sw: LDLIBS += -lcmocka
-test_sw: CFLAGS += -g  -DDEBUG=1
+test_sw: CFLAGS += -g 
 test_sw: sw.o alignment.o score_matrix.o test_sw.o sds/sds.o 
 
+score_matrix.o: score_matrix.h
 
 valgrind_%: %
 	valgrind --leak-check=full --suppressions=valgrind_suppressions.supp --error-exitcode=1 ./$*

@@ -87,7 +87,7 @@ static void test_pair_alignment_get_reference_e2e(void **state) {
 
 	sds observed_reference = pair_alignment_get_reference(test_alignment);
 
-	assert_string_equal(observed_reference, "fuck");
+	assert_string_equal(observed_reference, "          AAA TTTT C");
 
 	pair_alignment_free(&test_alignment);
 }

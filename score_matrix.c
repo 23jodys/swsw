@@ -26,7 +26,7 @@ ScoreMatrix* score_matrix_create(size_t S1, size_t S2) {
 
 ScoreMatrixError score_matrix_add(ScoreMatrix * score_matrix, size_t s1, size_t s2, Score score) {
 	//DEBUGLOG("s1: %zu, s2: %zu\n", s1, s2);
-	DEBUGLOG("score.value: %lu, score.direction: %d\n", score.value, score.direction );
+	DEBUGLOG("score.value: %lld, score.direction: %d\n", score.value, score.direction );
 	if (score_matrix == NULL) {
 		ScoreMatrixError error = {.error_number=3, .success=false};
 		return error;
@@ -48,7 +48,7 @@ ScoreMatrixError score_matrix_add(ScoreMatrix * score_matrix, size_t s1, size_t 
 
 	*(score_matrix->data + offset) = score;
 
-	DEBUGLOG("S1 %d, S2 %d, offset %zu, value %lu, direction %d\n", score_matrix->S1, score_matrix->S2, offset, (*(score_matrix->data + offset)).value,  (*(score_matrix->data + offset)).direction); 
+	DEBUGLOG("S1 %d, S2 %d, offset %zu, value %lld, direction %d\n", score_matrix->S1, score_matrix->S2, offset, (*(score_matrix->data + offset)).value,  (*(score_matrix->data + offset)).direction); 
 
 
 	ScoreMatrixError error = {.error_number=0, .success=true};
@@ -144,7 +144,7 @@ void score_matrix_printf(ScoreMatrix * score_matrix, char * seq1, int seq1_len, 
 					dir = '|';
 				}
 
-				printf("%c%03lu ", dir, result.score.value); 
+				printf("%c%03lld ", dir, result.score.value); 
 			}
 		} 
 		printf("\n"); 

@@ -8,7 +8,7 @@ SwswAlignment* swsw_sw_align(SwswScoreConfig score_config, sds seq1, int seq1_le
 	// length so that we can have the first row and column set to zero so that the traceback
 	// is guaranteed to stop.
 	ScoreMatrix* score_matrix = score_matrix_create(seq1_len + 1, seq2_len + 1);
-	score_matrix_printf(score_matrix, seq1, seq1_len, seq2, seq2_len);
+	//score_matrix_printf(score_matrix, seq1, seq1_len, seq2, seq2_len);
 	SwswAlignment* result = malloc(sizeof(SwswAlignment));
 	if (!result) {
 		return NULL;
@@ -30,7 +30,7 @@ SwswAlignment* swsw_sw_align(SwswScoreConfig score_config, sds seq1, int seq1_le
 
 	PairAlignment* alignment_result = swsw_sw_traceback(score_matrix, seq1, seq1_len, seq2, seq2_len);
 
-	score_matrix_printf(score_matrix, seq1, seq1_len, seq2, seq2_len);
+	//score_matrix_printf(score_matrix, seq1, seq1_len, seq2, seq2_len);
 	score_matrix_free(&score_matrix);
 
 	result->success=true;
@@ -86,7 +86,7 @@ ScoreMatrixError swsw_sw_score(
 			}
 
 			if (score.value > max) {
-				DEBUGLOG("score %lu was higher that %d, setting highest s1: %d, highest s2: %d\n", 
+				DEBUGLOG("score %lld was higher that %d, setting highest s1: %d, highest s2: %d\n", 
 						score.value, max, s1_index, s2_index
 				);
 				score_matrix->highest_s1 = s1_index;
@@ -96,7 +96,7 @@ ScoreMatrixError swsw_sw_score(
 
 			seq2_index++;
 
-			DEBUGLOG("score.value: %lu, score.direction: %d\n", score.value, score.direction );
+			DEBUGLOG("score.value: %lld, score.direction: %d\n", score.value, score.direction );
 			
 			score_matrix_add(score_matrix, s1_index, s2_index, score);
 		}
@@ -118,30 +118,40 @@ PairAlignment* swsw_sw_traceback(ScoreMatrix * score_matrix, char * seq1, int se
 		return NULL;
 	}
 	do {
-
 		//TOOD: handle error
 		//
 		ScoreMatrixResult current_result = score_matrix_get(score_matrix, s1_index, s2_index);
 		current_direction = (current_result.score).direction;
-		DEBUGLOG("Looking at %d, %d which points us in %d\n", s1_index, s2_index, current_direction, next_score);
+		DEBUGLOG("Looking at %zu, %zu which points us in %d which contains score %llu\n", s1_index, s2_index, (int)current_direction, next_score);
 
 		if (current_direction == DirNw) {
-			pair_alignment_prepend(pa, seq1[s1_index - 1], seq2[s2_index - 1]);
+			// Match or mismatch
+			CigarOperator cigar_operator;
+			if (seq1[s1_index - 1] == seq2[s2_index - 1]) {
+				cigar_operator = CigarOperatorMatch;
+			} else {
+				cigar_operator = CigarOperatorMisMatch;
+			}
+			pair_alignment_prepend(pa, seq1[s1_index - 1], seq2[s2_index - 1], cigar_operator);
 			s1_index--;
 			s2_index--; 
 		} else if (current_direction == DirW) {
-			pair_alignment_prepend(pa, '-', seq2[s2_index - 1]);
+			// Sequence only in reference
+			pair_alignment_prepend(pa, '-', seq2[s2_index - 1], CigarOperatorRefOnly);
 			s2_index--;
-		} else {
-			pair_alignment_prepend(pa, seq1[s1_index - 1], '-');
+		} else { // DirN
+			// Sequence only in query 
+			pair_alignment_prepend(pa, seq1[s1_index - 1], '-', CigarOperatorQueryOnly);
 			s1_index--;
 		}
 		ScoreMatrixResult next_result = score_matrix_get(score_matrix, s1_index, s2_index);
 
 		next_score = next_result.score.value;
- 		DEBUGLOG("After following direction %d, next score is %lu\n", current_direction, next_score);
+ 		DEBUGLOG("After following direction %d, next score is %lld\n", current_direction, next_score);
 
 	} while (next_score > 0); 
+
+	pair_alignment_prepend_cigar(pa, CigarOperatorNull);
 
 	return pa;
 }

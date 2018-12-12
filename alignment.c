@@ -22,10 +22,16 @@ PairAlignment* pair_alignment_create(int length) {
 	}
 	_alignment->length = length;
 	_alignment->_index = length - 1;
+
+	_alignment->cigar = sdsempty();
+
+	_alignment->_last_cigar_count = 0;
+	_alignment->_last_cigar_operator = CigarOperatorNull;
+
 	return _alignment;
 }
 
-PairAlignmentError pair_alignment_prepend(PairAlignment * pa, char c1, char c2) {
+PairAlignmentError pair_alignment_prepend(PairAlignment * pa, char c1, char c2, CigarOperator cigar_operator) {
 	DEBUGLOG("Before -- c1: %c, c2: %c, index: %d, length: %d\n", c1, c2, pa->_index, pa->length);
 	if (pa->_index < 0) {
 		PairAlignmentError error = {.success=false, .error_number=1};
@@ -34,10 +40,26 @@ PairAlignmentError pair_alignment_prepend(PairAlignment * pa, char c1, char c2) 
 	pa->s1[pa->_index] = c1;	
 	pa->s2[pa->_index] = c2;	
 
+	pair_alignment_prepend_cigar(pa, cigar_operator);
+
 	pa->_index -= 1;
 	PairAlignmentError error = {.success=true, .error_number=0};
 	DEBUGLOG("After -- c1: %c, c2: %c, index: %d, length: %d\n", c1, c2, pa->_index, pa->length);
 	return error;
+}
+
+void pair_alignment_prepend_cigar(PairAlignment* pa, CigarOperator cigar_operator) {
+	if (pa->_last_cigar_operator != cigar_operator && pa->_last_cigar_operator != CigarOperatorNull) {
+		sdscatprintf(pa->cigar, "%lld%c", pa->_last_cigar_count, pa->_last_cigar_operator);
+		DEBUGLOG("Cigar operators '%c' and '%c' did not match, cigar string is now %s\n",
+				pa->_last_cigar_operator, cigar_operator, pa->cigar);
+
+		pa->_last_cigar_count = 1;
+	} else {
+		pa->_last_cigar_count++;
+		DEBUGLOG("Cigar operators '%c' and '%c', _last_cigar_count is now %llu\n",pa->_last_cigar_operator, cigar_operator, pa->_last_cigar_count);
+	}
+	pa->_last_cigar_operator = cigar_operator;
 }
 
 void pair_alignment_sprint(PairAlignment* pa) {
@@ -63,22 +85,10 @@ sds pair_alignment_get_query(PairAlignment* pa) {
 void pair_alignment_free(PairAlignment** pa) {
 	sdsfree((*(*pa)).s1);
 	sdsfree((*(*pa)).s2);
+	sdsfree((*(*pa)).cigar);
 	(*(*pa)).s1 = NULL;
 	(*(*pa)).s2 = NULL;
 	free(*pa);
 
 	*pa = NULL;
-}
-
-CigarString* cigar_string_create(PairAlignment* pa) {
-	CigarString* result = malloc(sizeof(CigarString));
-	result->cigar = sdsempty();
-	result->pos = 0;
-	return result;
-}
-
-void cigar_string_free(CigarString** cs) {
-	sdsfree((*cs)->cigar);
-	free(*cs);
-	*cs = NULL;
 }

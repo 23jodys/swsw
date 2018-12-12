@@ -25,7 +25,7 @@ static void test_sw_align_golden(void **state) {
 }
 
 /**
- * @brief given a simple alignment, verify that the cigar string is correct
+ * @brief Given a simple alignment that perfectly matches, verify that after asking for the score matrix the cigar string is correct
  */
 static void test_cigar_simple01(void **state) {
 	sds seq1 = sdsnew("ACTAGGTGACCACTGAGGT"); // Query
@@ -38,15 +38,12 @@ static void test_cigar_simple01(void **state) {
 	SwswAlignment* result = swsw_sw_align(score_config, seq1, seq1_len, seq2, seq2_len);
 	assert_true(result->success);
 
-	CigarString* cigar = cigar_string_create(result->alignment);
-	printf("%s\n", cigar->cigar);
-
 	sds expected = sdsnew("19M");
+	printf("observed: %s\n", result->alignment->cigar);
+	printf("expected: %s\n", expected);
 
-	assert_int_equal(cigar->pos, 1);
-	assert_string_equal(cigar->cigar, expected);
+	assert_string_equal(result->alignment->cigar, expected);
 
-	cigar_string_free(&cigar);
 	swsw_alignment_free(&result);
 	sdsfree(seq1);
 	sdsfree(seq2);
@@ -111,17 +108,11 @@ static void test_cigar_golden(void** state) {
 	SwswAlignment* result = swsw_sw_align(score_config, seq1, seq1_len, seq2, seq2_len);
 	assert_true(result->success);
 	
-	pair_alignment_sprint(result->alignment);
-
-	CigarString* cigar = cigar_string_create(result->alignment);
-	//printf("%s\n", cigar->cigar);
+	//pair_alignment_sprint(result->alignment);
 
 	sds expected = sdsnew("3M1I3M1D5M");
 
-	assert_int_equal(cigar->pos, 5);
-	assert_string_equal(cigar->cigar, expected);
-
-	cigar_string_free(&cigar);
+	assert_string_equal(result->alignment->cigar, expected);
 
 	swsw_alignment_free(&result);
 	sdsfree(seq1);
@@ -177,12 +168,12 @@ static void test_score(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		cmocka_unit_test(test_score),
-		cmocka_unit_test(test_sw_align_golden),
-		cmocka_unit_test(test_traceback),
+		//cmocka_unit_test(test_score),
+		//cmocka_unit_test(test_sw_align_golden),
+		//cmocka_unit_test(test_traceback),
 		cmocka_unit_test(test_cigar_golden),
-		cmocka_unit_test(test_traceback_small_gap),
-		cmocka_unit_test(test_cigar_simple01),
+		//cmocka_unit_test(test_traceback_small_gap),
+		//cmocka_unit_test(test_cigar_simple01),
 	};
 	cmocka_run_group_tests(tests, NULL, NULL);
 }

@@ -8,3 +8,4 @@ test_alignment
 test_sw
 *.dSYM/
 *.dylib
+TAGS

@@ -40,11 +40,7 @@ SwswAlignment* swsw_sw_align(SwswScoreConfig score_config, sds seq1, int seq1_le
 	return result;
 }
 
-ScoreMatrixError swsw_sw_score(
-		ScoreMatrix * score_matrix,
-		SwswScoreConfig score_config,
-		sds seq1, int seq1_len,
-		sds seq2, int seq2_len) {
+ScoreMatrixError swsw_sw_score(ScoreMatrix * score_matrix, SwswScoreConfig score_config, sds seq1, int seq1_len, sds seq2, int seq2_len) {
 
 	int max = 0;
 	int seq1_index = 0; // Index into actual sequence, not into the scoring matrix
@@ -106,7 +102,6 @@ ScoreMatrixError swsw_sw_score(
 	ScoreMatrixError error = {.success=true, .error_number=0};
 	return error;
 }
-
 
 PairAlignment* swsw_sw_traceback(ScoreMatrix * score_matrix, char * seq1, int seq1_len, char * seq2, int seq2_len) {
 	ScoreValue next_score = 0;

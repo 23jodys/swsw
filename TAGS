@@ -1,38 +1,0 @@
-
-score_matrix.c,366
-void score_matrix_align(6,59
-ScoreMatrixError score_matrix_score(16,377
-PairAlignment* score_matrix_traceback(76,2214
-ScoreMatrix* score_matrix_create(117,3792
-ScoreMatrixError score_matrix_add(137,4216
-ScoreMatrixError score_matrix_adds(163,4933
-ScoreMatrixResult score_matrix_get(168,5128
-void score_matrix_printf(222,6708
-void score_matrix_free(244,7292
-
-alignment.c,188
-void fake_malloc(6,59
-PairAlignment* pair_alignment_create(15,209
-PairAlignmentError pair_alignment_prepend(32,671
-void pair_alignment_sprint(45,1049
-void pair_alignment_free(52,1252
-
-alignment.h,155
-#define ALIGNMENT_H2,20
-typedef struct PairAlignment 5,62
-} PairAlignment;11,155
-typedef struct PairAlignmentError 13,173
-} PairAlignmentError;16,243
-
-score_matrix.h,335
-#define SCORE_MATRIX_H2,23
-typedef int Score;6,81
-typedef struct ScoreMatrix 8,101
-} ScoreMatrix;15,212
-typedef struct ScoreMatrixError 17,228
-} ScoreMatrixError;20,296
-typedef struct ScoreMatrixResult 22,317
-} ScoreMatrixResult;26,400
-typedef struct ScoreConfig 28,422
-} ScoreConfig;32,488
-#define score_matrix_geta(43,841

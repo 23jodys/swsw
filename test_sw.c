@@ -98,6 +98,8 @@ static void test_traceback_small_gap(void **state) {
  */
 static void test_cigar_golden(void** state) {
 	// https://sites.google.com/site/bioinformaticsremarks/bioinfo/sam-bam-format/what-is-a-cigar
+	// CCATACT GAACTGACTAAC
+	//     ACTAGAA TGGCT
 	sds seq1 = sdsnew("CCATACTGAACTGACTAAC");
 	sds seq2 = sdsnew("ACTAGAATGGCT");
 
@@ -108,9 +110,9 @@ static void test_cigar_golden(void** state) {
 	SwswAlignment* result = swsw_sw_align(score_config, seq1, seq1_len, seq2, seq2_len);
 	assert_true(result->success);
 	
-	//pair_alignment_sprint(result->alignment);
+	pair_alignment_sprint(result->alignment);
 
-	sds expected = sdsnew("3M1I3M1D5M");
+	sds expected = sdsnew("3M1I3M1D2M1X2M");
 
 	assert_string_equal(result->alignment->cigar, expected);
 
@@ -168,12 +170,12 @@ static void test_score(void **state) {
 
 int main(void) {
 	const struct CMUnitTest tests[] = {
-		//cmocka_unit_test(test_score),
-		//cmocka_unit_test(test_sw_align_golden),
-		//cmocka_unit_test(test_traceback),
+		cmocka_unit_test(test_score),
+		cmocka_unit_test(test_sw_align_golden),
+		cmocka_unit_test(test_traceback),
 		cmocka_unit_test(test_cigar_golden),
-		//cmocka_unit_test(test_traceback_small_gap),
-		//cmocka_unit_test(test_cigar_simple01),
+		cmocka_unit_test(test_traceback_small_gap),
+		cmocka_unit_test(test_cigar_simple01),
 	};
 	cmocka_run_group_tests(tests, NULL, NULL);
 }

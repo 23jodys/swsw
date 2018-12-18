@@ -5,8 +5,6 @@ CFLAGS += -Werror
 
 all: test_score_matrix test_alignment test_sw
 
-test: test_score_matrix test_alignment test_sw
-
 test_score_matrix: LDLIBS += -lcmocka
 test_score_matrix: CFLAGS += -g 
 test_score_matrix: score_matrix.o test_score_matrix.o alignment.o sds/sds.o

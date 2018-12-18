@@ -18,7 +18,7 @@ static void test_sw_align_golden(void **state) {
 	assert_true(result->success);
 	assert_int_equal(result->error_number, 0);
 	assert_non_null(result->alignment);
-	pair_alignment_sprint(result->alignment);
+	//pair_alignment_sprint(result->alignment);
 	swsw_alignment_free(&result);
 	sdsfree(seq1);
 	sdsfree(seq2);
@@ -39,8 +39,6 @@ static void test_cigar_simple01(void **state) {
 	assert_true(result->success);
 
 	sds expected = sdsnew("19M");
-	printf("observed: %s\n", result->alignment->cigar);
-	printf("expected: %s\n", expected);
 
 	assert_string_equal(result->alignment->cigar, expected);
 
@@ -72,7 +70,7 @@ static void test_traceback_small_gap(void **state) {
 	SwswAlignment* result = swsw_sw_align(score_config, seq1, seq1_len, seq2, seq2_len);
 	assert_true(result->success);
 
-	pair_alignment_sprint(result->alignment);
+	// pair_alignment_sprint(result->alignment);
 
 	sds reference_alignment = pair_alignment_get_reference(result->alignment);
 	sds query_alignment = pair_alignment_get_query(result->alignment);
@@ -81,8 +79,8 @@ static void test_traceback_small_gap(void **state) {
 	// Reference: ACT
 	// Query:     A-T
 	
-	printf("Reference: %s\n", reference_alignment);
-	printf("    Query: %s\n", query_alignment);
+	// printf("Reference: %s\n", reference_alignment);
+	// printf("    Query: %s\n", query_alignment);
 
 	assert_string_equal("A-T", query_alignment);
 	assert_string_equal("ACT", reference_alignment);
@@ -99,7 +97,9 @@ static void test_traceback_small_gap(void **state) {
 static void test_cigar_golden(void** state) {
 	// https://sites.google.com/site/bioinformaticsremarks/bioinfo/sam-bam-format/what-is-a-cigar
 	// CCATACT GAACTGACTAAC
+	//     ||| ||| ||x||
 	//     ACTAGAA TGGCT
+	//
 	sds seq1 = sdsnew("CCATACTGAACTGACTAAC");
 	sds seq2 = sdsnew("ACTAGAATGGCT");
 
@@ -110,7 +110,7 @@ static void test_cigar_golden(void** state) {
 	SwswAlignment* result = swsw_sw_align(score_config, seq1, seq1_len, seq2, seq2_len);
 	assert_true(result->success);
 	
-	pair_alignment_sprint(result->alignment);
+	// pair_alignment_sprint(result->alignment);
 
 	sds expected = sdsnew("3M1I3M1D2M1X2M");
 
@@ -134,7 +134,7 @@ static void test_traceback(void **state) {
 	score_config.mismatch = -3;
 
 	ScoreMatrixError error = swsw_sw_score(s, score_config, seq1, 9, seq2, 6);
-	//score_matrix_printf(s, seq1, 9, seq2, 6);
+
 	PairAlignment* pa = swsw_sw_traceback(s, seq1, 9, seq2, 6);
 	assert_non_null(pa);
 	score_matrix_free(&s);
@@ -166,7 +166,6 @@ static void test_score(void **state) {
 	assert_int_equal(result, 19);
 	score_matrix_free(&s);
 }
-
 
 int main(void) {
 	const struct CMUnitTest tests[] = {

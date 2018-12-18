@@ -1,3 +1,4 @@
+#include <inttypes.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "swsw.h"
@@ -144,7 +145,7 @@ void score_matrix_printf(ScoreMatrix * score_matrix, char * seq1, int seq1_len, 
 					dir = '|';
 				}
 
-				printf("%c%03lld ", dir, result.score.value); 
+				printf("%c%03" PRIi64, dir, result.score.value); 
 			}
 		} 
 		printf("\n"); 

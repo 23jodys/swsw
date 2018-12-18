@@ -52,7 +52,7 @@ void pair_alignment_prepend_cigar(PairAlignment* pa, CigarOperator cigar_operato
 	if (pa->_last_cigar_operator != cigar_operator && pa->_last_cigar_operator != CigarOperatorNull) {
 		// Prepend the cigar operator and length to the existing cigar string in the pair alignment object
 		sds temp_buffer = sdsempty();
-		temp_buffer = sdscatprintf(temp_buffer, "%lld%c%s", pa->_last_cigar_count, pa->_last_cigar_operator, pa->cigar);
+		temp_buffer = sdscatprintf(temp_buffer, "%llu%c%s", pa->_last_cigar_count, pa->_last_cigar_operator, pa->cigar);
 		sdsfree(pa->cigar);
 		pa->cigar = temp_buffer;
 		DEBUGLOG("Cigar operators '%c' and '%c' did not match, cigar string is now %s\n",

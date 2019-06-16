@@ -9,3 +9,7 @@ test_sw
 *.dSYM/
 *.dylib
 TAGS
+*.cmake
+*.gcov
+*.gcda
+*.gcno

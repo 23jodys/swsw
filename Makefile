@@ -1,18 +1,27 @@
+UNAME_S := $(shell uname -s)
+
 SRCS := score_matrix.c alignment.c sw.c
 OBJS := $(SRCS:.c=.o)
+ifeq ($(UNAME_S),Darwin)
+GCOV := xcrun llvm-cov gcov
+else
 GCOV := llvm-cov gcov
+endif
+
 CC   := clang
 
 CFLAGS += $(if $(COVERAGE), -fprofile-arcs -ftest-coverage )
+CFLAGS += $(if $(DEBUG), -DDEBUG=1 )
+CFLAGS += -Werror
 
 LDLIBS += $(if $(or $(COVERAGE),$(DEBUG)), -g )
 LDLIBS += $(if $(COVERAGE), --coverage )
 
-CFLAGS += -Werror
+
 
 all: test_score_matrix test_alignment test_sw
 
-test_score_matrix: LDLIBS += -lcmocka
+test_score_matrix: LDLIBS += -lcmocka 
 test_score_matrix: score_matrix.o test_score_matrix.o alignment.o sds/sds.o
 
 test_alignment: LDLIBS += -lcmocka 
@@ -28,6 +37,7 @@ sw.o: swsw.h
 valgrind_%: %
 	valgrind --leak-check=full --suppressions=valgrind_suppressions.supp --error-exitcode=1 ./$*
 
+coverage: COVERAGE=1
 coverage: test
 	$(GCOV) $(SRCS)
 

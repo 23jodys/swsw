@@ -55,6 +55,16 @@ typedef struct ScoreMatrixResult {
  */
 ScoreMatrix * score_matrix_create(size_t S1, size_t S2);
 
+/**
+ * @brief allocates a new ScoreMatrix. Cell values are set to 0 explicitly on creation.
+ * @param [in] S1 dimension of the sequence 1 side. This includes an extra column that will be the zeroed column so that tracebacks work easily.
+ * @param [in] S2 dimension of the sequence 2 side. This includes an extra column that will be the zeroed column so that tracebacks work easily.
+ * @param [in] malloc_ptr function pointer to a function emulating malloc
+ * @param [in] calloc_ptr function pointer to a function emulating calloc
+ * @returns a new ScoreMatrix with the given dimensions
+ */
+ScoreMatrix * score_matrix_alloc(size_t S1, size_t S2, void* (malloc_ptr)(size_t size), void* (calloc_ptr)(size_t count, size_t size));
+
 
 /**
  * @brief add a single value to the matrix

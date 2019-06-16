@@ -1,16 +1,33 @@
 #include <inttypes.h>
 #include <stdlib.h>
 #include <stdio.h>
+
 #include "swsw.h"
 
 ScoreMatrix* score_matrix_create(size_t S1, size_t S2) {
 	ScoreMatrix* score_matrix;
 
-	score_matrix = malloc(sizeof(ScoreMatrix));
+	/* Call alloc with standard malloc and calloc */
+	score_matrix = score_matrix_alloc(S1, S2, malloc, calloc);
+
+	return score_matrix;
+}
+
+ScoreMatrix* score_matrix_alloc(size_t S1, size_t S2, void*(malloc_ptr)(size_t size), void*(calloc_ptr)(size_t count, size_t size)) {
+	DEBUGLOG("malloc_ptr: %p\n", malloc_ptr);
+	DEBUGLOG("calloc_ptr: %p\n", calloc_ptr);
+	ScoreMatrix* score_matrix;
+
+	score_matrix = (malloc_ptr)(sizeof(ScoreMatrix));
+	DEBUGLOG("score_matrix: %p\n", score_matrix);
+	if (score_matrix == NULL) {
+		DEBUGLOG("NULL score_matrix\n");
+		return NULL;
+	}
 
 	size_t matrix_size = S1 * S2;
 	DEBUGLOG("Creating new matrix total size %zu\n", matrix_size );
-	score_matrix->data = calloc(matrix_size, sizeof(Score));
+	score_matrix->data = (calloc_ptr)(matrix_size, sizeof(Score));
 	if (score_matrix->data == NULL) {
 		score_matrix->success = false;
 		score_matrix->S1 = 0;
@@ -23,7 +40,6 @@ ScoreMatrix* score_matrix_create(size_t S1, size_t S2) {
 
 	return score_matrix;
 }
-
 
 ScoreMatrixError score_matrix_add(ScoreMatrix * score_matrix, size_t s1, size_t s2, Score score) {
 	//DEBUGLOG("s1: %zu, s2: %zu\n", s1, s2);

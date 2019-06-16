@@ -9,6 +9,15 @@
 #include "sds/sds.h"
 #include "swsw.h"
 
+/* Simple function to replace malloc for unit testing */
+void* null_malloc(size_t size) {
+	return NULL;
+}
+
+/* Simple function to replace calloc for unit testing */
+void* null_calloc(size_t count, size_t size) {
+	return NULL;
+}
 
 static void test_add_freed_matrix_fails(void **state) {
 	(void) state; /* unused */
@@ -292,6 +301,29 @@ static void test_fill_full_matrix(void **state) {
 	}
 }
 
+#undef calloc
+/** 
+ * @brief given that malloc will return NULL, verify that _alloc returns NULL 
+ */
+static void test_score_matrix_alloc_null_malloc(void **state) {
+	(void) state; /* unused */
+	ScoreMatrix * s = score_matrix_alloc(10, 10, null_malloc, calloc);
+	assert_null(s);
+}
+#define calloc test_calloc
+
+#undef malloc
+/**
+ * @brief Given that calloc will return NULL, verify that the ScoreMatrix structure indicates this
+ */
+static void test_score_matrix_alloc_null_calloc(void **state) {
+	(void) state; /* unused */
+	ScoreMatrix * s = score_matrix_alloc(10, 10, malloc, null_calloc);
+	assert_false(s->success);
+}
+#define malloc test_malloc
+
+
 int main(void) {
 	// These tests confirm that values can be stored and retrieved correctly.
 	const struct CMUnitTest round_trip_tests[] = {
@@ -324,14 +356,20 @@ int main(void) {
 		cmocka_unit_test(test_create_add_free), 
 	};
 
+	const struct CMUnitTest alloc_tests[] = {
+		cmocka_unit_test(test_score_matrix_alloc_null_malloc),
+		cmocka_unit_test(test_score_matrix_alloc_null_calloc)
+	};
 
 	char* round_trip_env = getenv("TEST_ROUND_TRIP");
 	char* interface_env = getenv("TEST_INTERFACE");
 	char* general_env = getenv("TEST_GENERAL");
+	char* alloc_env = getenv("TEST_ALLOC");
 
 	int round_trip_result = 0; 
 	int interface_result = 0; 
 	int general_result = 0;
+	int alloc_result = 0;
 
 #define run_group(group) group ## _result = cmocka_run_group_tests( group ## _tests , NULL, NULL)
 
@@ -347,10 +385,14 @@ int main(void) {
 		if (general_env != NULL) {
 			run_group(general);
 		}
+		if (alloc_env != NULL) {
+			run_group(alloc);
+		}
 	} else {
 		run_group(round_trip);
 		run_group(interface);
 		run_group(general);
+		run_group(alloc);
 	}
-	return round_trip_result + interface_result + general_result;
+	return round_trip_result + interface_result + general_result + alloc_result;
 }
